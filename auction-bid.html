@@ -252,7 +252,7 @@ function showError(msg){document.getElementById('mainSection').innerHTML=`<div s
 function updateTeamDisplay(){
   const t=S.team;if(!t)return;
   document.getElementById('teamNameHdr').textContent=t.name+(t.manager?' · '+t.manager:'');
-  document.getElementById('budgetVal').textContent='৳'+fmt(t.currentBudget);
+  document.getElementById('budgetVal').textContent='BDT '+fmt(t.currentBudget);
   const pct=t.initialBudget>0?Math.max(0,(t.currentBudget/t.initialBudget)*100):0;
   document.getElementById('budgetFill').style.width=pct+'%';
   document.getElementById('playerCount').textContent=(t.players||[]).length;
@@ -265,7 +265,7 @@ function handleAuction(prev,cur){
   if(status==='sold'&&prev.status!=='sold'){
     document.getElementById('soPlayer').textContent=(lastSoldPlayer||'').toUpperCase();
     document.getElementById('soTeam').textContent=lastSoldTeam||'';
-    document.getElementById('soPrice').textContent='৳'+fmt(lastSoldPrice);
+    document.getElementById('soPrice').textContent='BDT '+fmt(lastSoldPrice);
     document.getElementById('soldOverlay').classList.add('show');
     setTimeout(()=>document.getElementById('soldOverlay').classList.remove('show'),4000);
   }
@@ -293,10 +293,10 @@ function handleAuction(prev,cur){
   document.getElementById('playerBadges').innerHTML=badges;
   document.getElementById('playerName').textContent=p.name;
   document.getElementById('playerStatsTxt').textContent=p.stats||'';
-  document.getElementById('pBase').textContent='৳'+fmt(p.basePrice);
+  document.getElementById('pBase').textContent='BDT '+fmt(p.basePrice);
 
   const bid=currentBid||p.basePrice;
-  document.getElementById('pBid').textContent='৳'+fmt(bid);
+  document.getElementById('pBid').textContent='BDT '+fmt(bid);
   const isMeLead=currentBidder===teamId;
   document.getElementById('pBidder').textContent=isMeLead?'🏆 YOU are leading!':(currentBidderName?'Leading: '+currentBidderName:'No bids yet');
   document.getElementById('wonBanner').style.display=isMeLead?'block':'none';
@@ -312,7 +312,7 @@ function handleAuction(prev,cur){
 
   // Bid controls
   if(!myBid||myBid<=bid) myBid=bid+500;
-  document.getElementById('myBidAmount').textContent='৳'+fmt(myBid);
+  document.getElementById('myBidAmount').textContent='BDT '+fmt(myBid);
 
   const canBid=status==='active'&&!isMeLead&&(S.team?.currentBudget||0)>=myBid;
   const bidBtn=document.getElementById('bidBtn');
@@ -324,13 +324,13 @@ function handleAuction(prev,cur){
 function addI(a){
   const cur=S.auction.currentBid||0;
   myBid=Math.max(myBid,cur)+a;
-  document.getElementById('myBidAmount').textContent='৳'+fmt(myBid);
+  document.getElementById('myBidAmount').textContent='BDT '+fmt(myBid);
   checkBidBtn();
 }
 function resetI(){
   const cur=S.auction.currentBid||0;
   myBid=cur+500;
-  document.getElementById('myBidAmount').textContent='৳'+fmt(myBid);
+  document.getElementById('myBidAmount').textContent='BDT '+fmt(myBid);
   checkBidBtn();
 }
 function checkBidBtn(){
@@ -349,7 +349,7 @@ async function submitBid(){
   if(S.auction.currentBidder===teamId){toast('You\'re already leading!');return;}
   const dur=S.settings.timerDuration||30;
   await fb.patch('auction',{currentBid:myBid,currentBidder:teamId,currentBidderName:S.team.name,timer:dur,status:'active'});
-  toast('Bid placed: ৳'+fmt(myBid));
+  toast('Bid placed: BDT '+fmt(myBid));
 }
 
 function renderSquad(){
@@ -364,12 +364,12 @@ function renderSquad(){
       ${p.img?`<img src="${p.img}" class="si-img" onerror="this.style.display='none'">`:
         `<div class="si-img" style="display:flex;align-items:center;justify-content:center;font-size:18px">👤</div>`}
       <div class="si-info"><div class="si-name">${p.name}</div><div class="si-meta">${(p.role||'bat').toUpperCase()}</div></div>
-      <div class="si-price">৳${fmt(p.soldPrice)}</div>
+      <div class="si-price">BDT ${fmt(p.soldPrice)}</div>
     </div>`;
   }).filter(Boolean).join('');
 }
 
-function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'৳'+(n/100000).toFixed(1)+'L';if(n>=1000)return'৳'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'৳'+n;}
+function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'BDT '+(n/100000).toFixed(1)+'L';if(n>=1000)return'BDT '+(n/1000).toFixed(n%1000===0?0:1)+'K';return'BDT '+n;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 </script>
 </body>

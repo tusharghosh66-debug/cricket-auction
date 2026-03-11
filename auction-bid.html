@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Team Bid</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@700;900&display=swap');
+:root{--p:#00e5ff;--g:#ffd700;--gn:#00ff88;--r:#ff3366;--bg:#080c16;--c:#0f1623;--c2:#161f30;--b:rgba(255,255,255,.07);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:100vh;}
+.hdr{background:linear-gradient(135deg,#0a1628,#111e35);border-bottom:1px solid var(--b);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;}
+.hdr-l .logo{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;color:var(--p);letter-spacing:1px;}
+.hdr-l .team-name{font-size:12px;color:#888;margin-top:2px;}
+.conn{display:flex;align-items:center;gap:5px;font-size:11px;color:#555;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--r);}
+.dot.ok{background:var(--gn);}
+
+.toast{position:fixed;top:66px;left:50%;transform:translateX(-50%) translateY(-14px);background:rgba(8,12,22,.96);border:1px solid var(--p);backdrop-filter:blur(12px);color:#fff;padding:8px 16px;border-radius:40px;font-size:12px;font-weight:600;opacity:0;transition:all .25s;white-space:nowrap;z-index:999;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* BUDGET BAR */
+.budget-bar{background:var(--c);padding:14px 16px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;}
+.budget-val{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:var(--g);}
+.budget-lbl{font-size:10px;color:#444;text-transform:uppercase;letter-spacing:.8px;margin-top:1px;}
+.budget-progress{flex:1;margin:0 16px;height:6px;background:var(--c2);border-radius:3px;overflow:hidden;}
+.budget-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--g));border-radius:3px;transition:width .5s;}
+.players-count{text-align:right;}
+.players-count .v{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--p);}
+.players-count .l{font-size:10px;color:#444;text-transform:uppercase;letter-spacing:.8px;}
+
+/* PLAYER CARD */
+.player-section{padding:14px;}
+.no-auction{text-align:center;padding:60px 20px;}
+.na-icon{font-size:60px;margin-bottom:16px;display:block;}
+.na-title{font-family:'Orbitron',monospace;font-size:18px;color:var(--p);margin-bottom:8px;}
+.na-sub{font-size:13px;color:#555;line-height:1.6;}
+
+.player-card{background:linear-gradient(135deg,#0d1b2a,#1a2744);border:1px solid rgba(0,229,255,.15);border-radius:16px;padding:18px;margin-bottom:14px;position:relative;overflow:hidden;}
+.player-card::after{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;background:radial-gradient(circle,rgba(0,229,255,.07),transparent);border-radius:50%;}
+.player-top{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px;}
+.player-img{width:80px;height:80px;border-radius:14px;object-fit:cover;border:1px solid var(--b);flex-shrink:0;}
+.player-img-ph{width:80px;height:80px;border-radius:14px;background:var(--c2);border:1px solid var(--b);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;}
+.player-info .badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
+.badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
+.b-bat{background:rgba(0,255,136,.12);color:var(--gn);}
+.b-bowl{background:rgba(255,51,102,.12);color:var(--r);}
+.b-all{background:rgba(255,215,0,.12);color:var(--g);}
+.b-wk{background:rgba(0,229,255,.12);color:var(--p);}
+.b-home{background:rgba(0,180,216,.12);color:#00b4d8;}
+.b-away{background:rgba(255,107,53,.12);color:#ff6b35;}
+.player-name{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:3px;}
+.player-stats-txt{font-size:12px;color:#555;}
+
+/* PRICES */
+.prices-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.price-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:11px;}
+.price-box.bid{background:rgba(255,215,0,.05);border-color:rgba(255,215,0,.2);}
+.pb-lbl{font-size:9px;font-weight:700;letter-spacing:.8px;color:#444;text-transform:uppercase;margin-bottom:3px;}
+.pb-val{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#777;}
+.pb-big{font-size:26px;color:var(--g);text-shadow:0 0 15px rgba(255,215,0,.3);}
+.pb-bidder{font-size:11px;color:var(--p);margin-top:3px;font-weight:600;}
+
+/* TIMER */
+.timer-section{text-align:center;margin-bottom:14px;}
+.timer-ring{position:relative;width:110px;height:110px;margin:0 auto 6px;}
+.timer-svg{width:110px;height:110px;transform:rotate(-90deg);}
+.t-track{fill:none;stroke:rgba(255,255,255,.06);stroke-width:8;}
+.t-prog{fill:none;stroke:var(--p);stroke-width:8;stroke-linecap:round;stroke-dasharray:298;stroke-dashoffset:0;transition:stroke-dashoffset .95s linear,stroke .3s;}
+.t-prog.urg{stroke:var(--r);}
+.timer-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.timer-num{font-family:'Orbitron',monospace;font-size:38px;font-weight:900;color:#fff;line-height:1;}
+.timer-num.urg{color:var(--r);animation:bl .5s infinite;}
+@keyframes bl{50%{opacity:.4}}
+.timer-status{font-size:10px;color:#444;text-transform:uppercase;letter-spacing:.8px;margin-top:2px;}
+
+/* BID CONTROLS */
+.bid-controls{background:var(--c);border:1px solid var(--b);border-radius:14px;padding:14px;margin-bottom:12px;}
+.bid-amount-big{font-family:'Orbitron',monospace;font-size:30px;font-weight:900;color:var(--p);text-align:center;padding:14px;background:rgba(0,229,255,.05);border-radius:10px;border:1px solid rgba(0,229,255,.15);margin-bottom:10px;}
+.inc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px;}
+.inc-btn{padding:13px 4px;border-radius:9px;border:1px solid rgba(0,229,255,.15);background:rgba(0,229,255,.06);color:var(--p);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:center;}
+.inc-btn:active{background:rgba(0,229,255,.25);transform:scale(.95);}
+
+/* BID BUTTON */
+.bid-btn{width:100%;padding:18px;border:none;border-radius:14px;font-family:'Orbitron',monospace;font-size:18px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,#00e5ff,#0077b6);color:#fff;letter-spacing:1px;box-shadow:0 6px 24px rgba(0,229,255,.3);transition:all .15s;}
+.bid-btn:active{transform:scale(.97);}
+.bid-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;}
+.bid-btn.leading{background:linear-gradient(135deg,#ffd700,#e6a800);color:#000;box-shadow:0 6px 24px rgba(255,215,0,.3);}
+
+/* SQUAD */
+.squad-section{padding:0 14px 80px;}
+.squad-title{font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;}
+.squad-item{display:flex;align-items:center;gap:10px;background:var(--c);border:1px solid var(--b);border-radius:10px;padding:10px;margin-bottom:6px;}
+.si-img{width:36px;height:36px;border-radius:8px;object-fit:cover;background:var(--c2);flex-shrink:0;}
+.si-info{flex:1;}
+.si-name{font-size:13px;font-weight:600;color:#ccc;}
+.si-meta{font-size:10px;color:#555;margin-top:1px;}
+.si-price{font-family:'Orbitron',monospace;font-size:12px;color:var(--g);}
+
+/* STATUS OVERLAYS */
+.sold-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;}
+.sold-overlay.show{opacity:1;pointer-events:all;}
+.sold-box{background:linear-gradient(135deg,#0d1b2a,#1a2744);border:2px solid var(--g);border-radius:24px;padding:40px;text-align:center;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.sold-box .hm{font-size:60px;display:block;margin-bottom:8px;}
+.sold-box .st{font-family:'Orbitron',monospace;font-size:60px;font-weight:900;color:var(--g);letter-spacing:6px;text-shadow:0 0 30px rgba(255,215,0,.5);}
+.sold-box .sn{font-family:'Orbitron',monospace;font-size:22px;color:#fff;margin:6px 0;}
+.sold-box .sp{font-family:'Orbitron',monospace;font-size:36px;color:var(--g);}
+.won-banner{background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,140,0,.05));border:1px solid rgba(255,215,0,.3);border-radius:10px;padding:10px;text-align:center;margin-bottom:12px;font-size:13px;font-weight:700;color:var(--g);}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="logo">📱 TEAM BID</div>
+    <div class="team-name" id="teamNameHdr">Loading...</div>
+  </div>
+  <div class="conn"><span class="dot" id="dot"></span><span id="stxt">...</span></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Budget Bar -->
+<div class="budget-bar">
+  <div><div class="budget-val" id="budgetVal">-</div><div class="budget-lbl">Budget Left</div></div>
+  <div class="budget-progress"><div class="budget-fill" id="budgetFill" style="width:100%"></div></div>
+  <div class="players-count"><div class="v" id="playerCount">0</div><div class="l">Players</div></div>
+</div>
+
+<!-- SOLD OVERLAY -->
+<div class="sold-overlay" id="soldOverlay">
+  <div class="sold-box">
+    <span class="hm">🔨</span>
+    <div class="st">SOLD!</div>
+    <div class="sn" id="soPlayer">-</div>
+    <div style="font-size:13px;color:var(--p);margin:4px 0" id="soTeam">-</div>
+    <div class="sp" id="soPrice">-</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="player-section" id="mainSection">
+  <div class="no-auction" id="noAuction">
+    <span class="na-icon">⏳</span>
+    <div class="na-title">WAITING</div>
+    <div class="na-sub">No auction in progress.<br>Wait for the host to start.</div>
+  </div>
+
+  <!-- Active Auction -->
+  <div id="auctionActive" style="display:none">
+    <!-- Won by this team banner -->
+    <div class="won-banner" id="wonBanner" style="display:none">🏆 You're winning this player!</div>
+
+    <!-- Player Card -->
+    <div class="player-card">
+      <div class="player-top">
+        <div id="playerImgWrap"></div>
+        <div class="player-info">
+          <div class="badges" id="playerBadges"></div>
+          <div class="player-name" id="playerName">-</div>
+          <div class="player-stats-txt" id="playerStatsTxt">-</div>
+        </div>
+      </div>
+
+      <!-- Prices -->
+      <div class="prices-grid">
+        <div class="price-box"><div class="pb-lbl">Base Price</div><div class="pb-val" id="pBase">-</div></div>
+        <div class="price-box bid">
+          <div class="pb-lbl">Current Bid</div>
+          <div class="pb-val pb-big" id="pBid">-</div>
+          <div class="pb-bidder" id="pBidder">-</div>
+        </div>
+      </div>
+
+      <!-- Timer -->
+      <div class="timer-section">
+        <div class="timer-ring">
+          <svg class="timer-svg" viewBox="0 0 110 110">
+            <circle class="t-track" cx="55" cy="55" r="47"/>
+            <circle class="t-prog" id="tProg" cx="55" cy="55" r="47"/>
+          </svg>
+          <div class="timer-text">
+            <div class="timer-num" id="timerNum">-</div>
+            <div class="timer-status" id="timerStatus">waiting</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bid Controls -->
+    <div class="bid-controls">
+      <div class="bid-amount-big" id="myBidAmount">-</div>
+      <div class="inc-grid">
+        <div class="inc-btn" onclick="addI(500)">+500</div>
+        <div class="inc-btn" onclick="addI(1000)">+1K</div>
+        <div class="inc-btn" onclick="addI(2000)">+2K</div>
+        <div class="inc-btn" onclick="addI(5000)">+5K</div>
+        <div class="inc-btn" onclick="addI(10000)">+10K</div>
+        <div class="inc-btn" onclick="resetI()">↩ Reset</div>
+      </div>
+      <button class="bid-btn" id="bidBtn" onclick="submitBid()">⚡ BID NOW</button>
+    </div>
+  </div>
+</div>
+
+<!-- Squad -->
+<div class="squad-section">
+  <div class="squad-title" id="squadTitle">My Squad (0)</div>
+  <div id="squadList"><div style="color:#333;font-size:12px">No players yet.</div></div>
+</div>
+
+<script>
+const DB="https://auctiontable-bb663-default-rtdb.firebaseio.com";
+const fb={
+  async get(p){try{const r=await fetch(`${DB}/${p}.json`);return r.ok?await r.json():null;}catch{return null;}},
+  async patch(p,d){try{await fetch(`${DB}/${p}.json`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});}catch{}}
+};
+
+// Get params from URL
+const params=new URLSearchParams(window.location.search);
+const tourId=params.get('t')||null;
+const teamId=params.get('team')||null;
+
+let S={team:null,players:{},auction:{},settings:{timerDuration:30}};
+let myBid=0,prevSoldStatus=null;
+
+(async function(){
+  if(!tourId||!teamId){showError('Invalid link. Missing tournament or team ID.');return;}
+
+  // Load team info
+  const team=await fb.get(`tours/${tourId}/teams/${teamId}`);
+  if(!team){showError('Team not found. Check your link.');return;}
+  S.team=team;
+  updateTeamDisplay();
+  setConn(true);
+
+  // Poll
+  pollPath(`tours/${tourId}/teams/${teamId}`,d=>{if(!d)return;S.team=d;updateTeamDisplay();renderSquad();},2000);
+  pollPath(`tours/${tourId}/players`,d=>{S.players=d||{};renderSquad();},2000);
+  pollPath(`tours/${tourId}/settings`,d=>{if(!d)return;S.settings=d;},5000);
+  pollPath('auction',d=>{if(!d)return;const prev={...S.auction};S.auction=d;handleAuction(prev,d);},800);
+})();
+
+function pollPath(path,cb,ms=1200){
+  let last=undefined;
+  async function run(){const v=await fb.get(path);const s=JSON.stringify(v);if(s!==JSON.stringify(last)){last=v;cb(v);}}
+  run();setInterval(run,ms);
+}
+function setConn(ok){document.getElementById('dot').className='dot'+(ok?' ok':'');document.getElementById('stxt').textContent=ok?'Live':'Offline';}
+function showError(msg){document.getElementById('mainSection').innerHTML=`<div style="text-align:center;padding:60px 20px;"><div style="font-size:40px;margin-bottom:16px">❌</div><div style="font-size:14px;color:#666;line-height:1.6">${msg}</div></div>`;}
+
+function updateTeamDisplay(){
+  const t=S.team;if(!t)return;
+  document.getElementById('teamNameHdr').textContent=t.name+(t.manager?' · '+t.manager:'');
+  document.getElementById('budgetVal').textContent='৳'+fmt(t.currentBudget);
+  const pct=t.initialBudget>0?Math.max(0,(t.currentBudget/t.initialBudget)*100):0;
+  document.getElementById('budgetFill').style.width=pct+'%';
+  document.getElementById('playerCount').textContent=(t.players||[]).length;
+}
+
+function handleAuction(prev,cur){
+  const{status,currentPlayerId,currentBid,currentBidder,currentBidderName,timer,timerDuration,lastSoldPlayer,lastSoldTeam,lastSoldPrice}=cur;
+
+  // SOLD event
+  if(status==='sold'&&prev.status!=='sold'){
+    document.getElementById('soPlayer').textContent=(lastSoldPlayer||'').toUpperCase();
+    document.getElementById('soTeam').textContent=lastSoldTeam||'';
+    document.getElementById('soPrice').textContent='৳'+fmt(lastSoldPrice);
+    document.getElementById('soldOverlay').classList.add('show');
+    setTimeout(()=>document.getElementById('soldOverlay').classList.remove('show'),4000);
+  }
+
+  if(status==='sold'||!currentPlayerId){
+    document.getElementById('noAuction').style.display='block';
+    document.getElementById('auctionActive').style.display='none';
+    return;
+  }
+
+  document.getElementById('noAuction').style.display='none';
+  document.getElementById('auctionActive').style.display='block';
+
+  const p=S.players[currentPlayerId];if(!p)return;
+
+  // Player display
+  const imgWrap=document.getElementById('playerImgWrap');
+  imgWrap.innerHTML=p.img?`<img src="${p.img}" class="player-img" onerror="this.style.display='none'">`:`<div class="player-img-ph">👤</div>`;
+
+  const roleMap={bat:'b-bat',bowl:'b-bowl',all:'b-all',wk:'b-wk'};
+  const roleLabel={bat:'BAT',bowl:'BOWL',all:'ALL',wk:'WK'};
+  let badges=`<span class="badge ${roleMap[p.role]||'b-bat'}">${roleLabel[p.role]||'BAT'}</span>`;
+  if(p.type==='home') badges+=`<span class="badge b-home">HOME</span>`;
+  if(p.type==='away') badges+=`<span class="badge b-away">AWAY</span>`;
+  document.getElementById('playerBadges').innerHTML=badges;
+  document.getElementById('playerName').textContent=p.name;
+  document.getElementById('playerStatsTxt').textContent=p.stats||'';
+  document.getElementById('pBase').textContent='৳'+fmt(p.basePrice);
+
+  const bid=currentBid||p.basePrice;
+  document.getElementById('pBid').textContent='৳'+fmt(bid);
+  const isMeLead=currentBidder===teamId;
+  document.getElementById('pBidder').textContent=isMeLead?'🏆 YOU are leading!':(currentBidderName?'Leading: '+currentBidderName:'No bids yet');
+  document.getElementById('wonBanner').style.display=isMeLead?'block':'none';
+
+  // Timer
+  const t=timer||0,tot=timerDuration||30;
+  document.getElementById('timerNum').textContent=t;
+  document.getElementById('timerNum').className='timer-num'+(t<=5?' urg':'');
+  document.getElementById('timerStatus').textContent=status==='active'?'seconds':(status==='paused'?'paused':'ended');
+  const offset=298*(1-Math.max(0,t/tot));
+  document.getElementById('tProg').style.strokeDashoffset=offset;
+  document.getElementById('tProg').className='t-prog'+(t<=5?' urg':'');
+
+  // Bid controls
+  if(!myBid||myBid<=bid) myBid=bid+500;
+  document.getElementById('myBidAmount').textContent='৳'+fmt(myBid);
+
+  const canBid=status==='active'&&!isMeLead&&(S.team?.currentBudget||0)>=myBid;
+  const bidBtn=document.getElementById('bidBtn');
+  bidBtn.disabled=!canBid||(status!=='active');
+  bidBtn.className='bid-btn'+(isMeLead?' leading':'');
+  bidBtn.textContent=isMeLead?'🏆 YOU\'RE LEADING':'⚡ BID NOW';
+}
+
+function addI(a){
+  const cur=S.auction.currentBid||0;
+  myBid=Math.max(myBid,cur)+a;
+  document.getElementById('myBidAmount').textContent='৳'+fmt(myBid);
+  checkBidBtn();
+}
+function resetI(){
+  const cur=S.auction.currentBid||0;
+  myBid=cur+500;
+  document.getElementById('myBidAmount').textContent='৳'+fmt(myBid);
+  checkBidBtn();
+}
+function checkBidBtn(){
+  const budget=S.team?.currentBudget||0;
+  const bidBtn=document.getElementById('bidBtn');
+  if(myBid>budget){bidBtn.style.background='linear-gradient(135deg,#555,#333)';bidBtn.textContent='❌ BUDGET EXCEEDED';}
+  else{bidBtn.style.background='';bidBtn.textContent='⚡ BID NOW';}
+  bidBtn.disabled=myBid>(S.team?.currentBudget||0)||S.auction.status!=='active';
+}
+
+async function submitBid(){
+  const budget=S.team?.currentBudget||0;
+  if(myBid>budget){toast('Budget exceeded!');return;}
+  if(myBid<=(S.auction.currentBid||0)){toast('Bid must be higher!');return;}
+  if(S.auction.status!=='active'){toast('Auction not active!');return;}
+  if(S.auction.currentBidder===teamId){toast('You\'re already leading!');return;}
+  const dur=S.settings.timerDuration||30;
+  await fb.patch('auction',{currentBid:myBid,currentBidder:teamId,currentBidderName:S.team.name,timer:dur,status:'active'});
+  toast('Bid placed: ৳'+fmt(myBid));
+}
+
+function renderSquad(){
+  if(!S.team)return;
+  const myPlayerIds=S.team.players||[];
+  document.getElementById('squadTitle').textContent='My Squad ('+myPlayerIds.length+')';
+  const el=document.getElementById('squadList');
+  if(!myPlayerIds.length){el.innerHTML='<div style="color:#333;font-size:12px">No players signed yet.</div>';return;}
+  el.innerHTML=myPlayerIds.map(pid=>{
+    const p=S.players[pid];if(!p)return'';
+    return`<div class="squad-item">
+      ${p.img?`<img src="${p.img}" class="si-img" onerror="this.style.display='none'">`:
+        `<div class="si-img" style="display:flex;align-items:center;justify-content:center;font-size:18px">👤</div>`}
+      <div class="si-info"><div class="si-name">${p.name}</div><div class="si-meta">${(p.role||'bat').toUpperCase()}</div></div>
+      <div class="si-price">৳${fmt(p.soldPrice)}</div>
+    </div>`;
+  }).filter(Boolean).join('');
+}
+
+function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'৳'+(n/100000).toFixed(1)+'L';if(n>=1000)return'৳'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'৳'+n;}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+</script>
+</body>
+</html>

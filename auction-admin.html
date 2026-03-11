@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Auction Admin</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@700;900&display=swap');
+:root{--p:#00e5ff;--g:#ffd700;--gn:#00ff88;--r:#ff3366;--or:#ff6b35;
+  --bg:#080c16;--c:#0f1623;--c2:#161f30;--c3:#1e2840;--b:rgba(255,255,255,.07);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:100vh;padding-bottom:90px;}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#0a1628,#111e35);border-bottom:1px solid var(--b);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;backdrop-filter:blur(12px);}
+.hdr-l{display:flex;align-items:center;gap:10px;}
+.logo{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;color:var(--p);letter-spacing:1px;}
+.tour-pill{background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.25);color:var(--p);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;cursor:pointer;letter-spacing:.5px;}
+.conn{display:flex;align-items:center;gap:5px;font-size:11px;color:#555;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--r);flex-shrink:0;}
+.dot.ok{background:var(--gn);}
+
+/* PAGES */
+.page{display:none;}.page.active{display:block;}
+
+/* TABS */
+.tabs{position:fixed;bottom:0;left:0;right:0;background:rgba(8,12,22,.98);border-top:1px solid var(--b);display:grid;grid-template-columns:repeat(4,1fr);z-index:200;backdrop-filter:blur(12px);}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 10px;cursor:pointer;}
+.tab .ic{font-size:18px;line-height:1;}
+.tab .lb{font-size:9px;color:#3a3a3a;text-transform:uppercase;letter-spacing:.8px;font-weight:600;transition:color .2s;}
+.tab.active .lb{color:var(--p);}
+
+/* TOURNAMENT SELECTOR */
+.tour-selector{margin:14px;background:var(--c);border:1px solid var(--b);border-radius:14px;overflow:hidden;}
+.tour-hd{padding:12px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;}
+.tour-hd-title{font-size:11px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:1px;}
+.tour-list{padding:8px;}
+.tour-item{display:flex;align-items:center;padding:10px 10px;border-radius:10px;cursor:pointer;gap:10px;transition:background .15s;margin-bottom:4px;}
+.tour-item:last-child{margin:0;}
+.tour-item:active,.tour-item:hover{background:rgba(255,255,255,.04);}
+.tour-item.active-t{background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.15);}
+.tour-badge{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.tour-info{flex:1;}
+.tour-name{font-size:13px;font-weight:700;color:#ddd;}
+.tour-meta{font-size:10px;color:#555;margin-top:2px;}
+.tour-actions{display:flex;gap:6px;}
+.icon-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--b);background:var(--c2);color:#666;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.icon-btn:active{background:var(--c3);}
+.icon-btn.del{border-color:rgba(255,51,102,.2);color:var(--r);}
+
+/* FORM CARD */
+.form-card{background:var(--c);border:1px solid var(--b);border-radius:14px;margin:0 14px 14px;overflow:hidden;}
+.form-hd{padding:11px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;}
+.form-title{font-size:11px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:1px;}
+.form-bd{padding:14px;}
+.ig{margin-bottom:11px;}
+.ig label{display:block;font-size:10px;font-weight:600;color:#555;margin-bottom:5px;text-transform:uppercase;letter-spacing:.8px;}
+.ig input,.ig select,.ig textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+.ig input:focus,.ig select:focus,.ig textarea:focus{border-color:var(--p);}
+.ig select option{background:#161f30;}
+.ig .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.ig .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+/* BUTTONS */
+.btn{width:100%;padding:11px;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.bp{background:linear-gradient(135deg,#00b4d8,#0077b6);color:#fff;}
+.bs{background:linear-gradient(135deg,#00c853,#007b33);color:#fff;}
+.bd{background:linear-gradient(135deg,#ff3366,#c0002b);color:#fff;}
+.bor{background:linear-gradient(135deg,#ff6b35,#c04a00);color:#fff;}
+.bgold{background:linear-gradient(135deg,#ffd700,#e6a800);color:#000;}
+.bgr{background:var(--c2);color:#777;border:1px solid var(--b);}
+.bo{background:transparent;border:1px solid var(--b);color:#888;}
+.bsm{padding:9px 10px;font-size:12px;border-radius:8px;}
+.b2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.b3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+/* PLAYER CARD */
+.player-grid{padding:0 14px 14px;}
+.p-card{background:var(--c);border:1px solid var(--b);border-radius:12px;margin-bottom:8px;overflow:hidden;}
+.p-card-top{display:flex;align-items:center;gap:12px;padding:12px;}
+.p-avatar{width:48px;height:48px;border-radius:10px;background:var(--c2);flex-shrink:0;object-fit:cover;border:1px solid var(--b);}
+.p-avatar-placeholder{width:48px;height:48px;border-radius:10px;background:var(--c2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;border:1px solid var(--b);}
+.p-info{flex:1;min-width:0;}
+.p-name{font-size:14px;font-weight:700;color:#ddd;margin-bottom:2px;}
+.p-meta{font-size:10px;color:#555;}
+.p-badges{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;}
+.badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
+.b-bat{background:rgba(0,255,136,.12);color:var(--gn);}
+.b-bowl{background:rgba(255,51,102,.12);color:var(--r);}
+.b-all{background:rgba(255,215,0,.12);color:var(--g);}
+.b-wk{background:rgba(0,229,255,.12);color:var(--p);}
+.b-home{background:rgba(0,180,216,.12);color:#00b4d8;}
+.b-away{background:rgba(255,107,53,.12);color:var(--or);}
+.b-sold{background:rgba(255,51,102,.12);color:var(--r);}
+.b-unsold{background:rgba(120,120,120,.12);color:#777;}
+.b-avail{background:rgba(0,200,83,.12);color:var(--gn);}
+.p-price{font-family:'Orbitron',monospace;font-size:13px;color:var(--g);font-weight:700;flex-shrink:0;}
+.p-card-actions{display:flex;gap:6px;padding:0 12px 10px;}
+
+/* IMAGE UPLOAD */
+.img-upload-area{border:2px dashed rgba(255,255,255,.1);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s;position:relative;}
+.img-upload-area:hover{border-color:var(--p);}
+.img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.img-preview{width:60px;height:60px;border-radius:8px;object-fit:cover;margin:0 auto 6px;}
+.img-upload-text{font-size:11px;color:#555;}
+.img-spinner{width:20px;height:20px;border:2px solid rgba(0,229,255,.2);border-top-color:var(--p);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 6px;}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* COPY MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal-box{background:#0f1623;border:1px solid var(--b);border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:80vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s;}
+.modal-overlay.show .modal-box{transform:translateY(0);}
+.modal-title{font-size:14px;font-weight:700;color:var(--p);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;}
+.modal-sub{font-size:11px;color:#555;margin-bottom:16px;}
+.copy-player-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:1px solid var(--b);margin-bottom:6px;cursor:pointer;transition:all .15s;}
+.copy-player-item.checked{background:rgba(0,229,255,.06);border-color:rgba(0,229,255,.3);}
+.cpi-check{width:20px;height:20px;border-radius:5px;border:2px solid #333;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#000;}
+.copy-player-item.checked .cpi-check{background:var(--p);border-color:var(--p);}
+
+/* SECTION */
+.sec{padding:14px 14px 8px;font-size:10px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;justify-content:space-between;}
+.sec-count{font-family:'Orbitron',monospace;font-size:11px;color:#555;font-weight:700;}
+
+/* TOAST */
+.toast{position:fixed;top:66px;left:50%;transform:translateX(-50%) translateY(-14px);background:rgba(8,12,22,.96);border:1px solid var(--p);backdrop-filter:blur(12px);color:#fff;padding:8px 16px;border-radius:40px;font-size:12px;font-weight:600;opacity:0;transition:all .25s;white-space:nowrap;z-index:999;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:#333;font-size:12px;}
+.empty-icon{font-size:40px;margin-bottom:10px;display:block;}
+
+/* SEARCH */
+.search-bar{margin:0 14px 10px;background:var(--c);border:1px solid var(--b);border-radius:10px;padding:10px 13px;display:flex;align-items:center;gap:8px;}
+.search-bar input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-family:'Inter',sans-serif;font-size:13px;}
+.search-bar input::placeholder{color:#333;}
+
+/* FILTER PILLS */
+.filter-row{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto;}
+.filter-row::-webkit-scrollbar{display:none;}
+.fpill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--b);color:#555;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.fpill.active{background:rgba(0,229,255,.1);border-color:rgba(0,229,255,.3);color:var(--p);}
+
+/* TEAM MANAGER LINK */
+.manager-link-box{background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.15);border-radius:10px;padding:10px 12px;margin-top:8px;}
+.link-url{font-size:10px;color:var(--p);word-break:break-all;margin-bottom:6px;font-family:monospace;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="logo">🏏 AUCTION</div>
+    <div class="tour-pill" onclick="switchPage('tournaments',document.querySelector('.tab'))" id="activeTourPill">No Tournament</div>
+  </div>
+  <div class="conn"><span class="dot" id="dot"></span><span id="stxt">...</span></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Modal for Copy Players -->
+<div class="modal-overlay" id="copyModal">
+  <div class="modal-box">
+    <div class="modal-title">📋 Copy Players</div>
+    <div class="modal-sub" id="copyModalSub">Select players to copy</div>
+    <div style="margin-bottom:12px;">
+      <div class="b2">
+        <button class="btn bp bsm" onclick="selectAllCopy()">Select All</button>
+        <button class="btn bgr bsm" onclick="clearAllCopy()">Clear All</button>
+      </div>
+    </div>
+    <div id="copyPlayerList"></div>
+    <div style="margin-top:14px;" class="b2">
+      <button class="btn bs" onclick="doCopyPlayers()">✓ Copy Selected</button>
+      <button class="btn bgr" onclick="closeModal('copyModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ TOURNAMENTS PAGE ═══════ -->
+<div class="page active" id="page-tournaments">
+  <div class="sec">Tournaments / Leagues</div>
+
+  <div style="padding:0 14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <button class="btn bsm bp" onclick="toggleFormCard('addTourForm')">+ New Tournament</button>
+    <button class="btn bsm bgold" onclick="openApp()" id="openAppBtn" style="display:none">🚀 Open Controller</button>
+  </div>
+
+  <div class="form-card" id="addTourForm" style="display:none">
+    <div class="form-hd">
+      <div class="form-title">New Tournament</div>
+      <div class="icon-btn" onclick="toggleFormCard('addTourForm')">✕</div>
+    </div>
+    <div class="form-bd">
+      <div class="ig"><label>Tournament Name</label><input type="text" id="tName" placeholder="e.g. DPL Summer 2025"></div>
+      <div class="ig"><label>Short Code</label><input type="text" id="tCode" placeholder="e.g. DPL25" maxlength="8" style="text-transform:uppercase"></div>
+      <div class="ig row2" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="ig" style="margin:0"><label>Icon</label><input type="text" id="tIcon" placeholder="🏏" maxlength="4"></div>
+        <div class="ig" style="margin:0"><label>Color</label><input type="color" id="tColor" value="#00e5ff"></div>
+      </div>
+      <div class="ig"><label>Default Budget per Team (৳)</label><input type="number" id="tBudget" value="500000"></div>
+      <div class="ig"><label>Default Base Price (৳)</label><input type="number" id="tBasePrice" value="5000"></div>
+      <div class="ig"><label>Timer Duration (seconds)</label><input type="number" id="tTimer" value="30" min="10" max="120"></div>
+      <div class="b2">
+        <button class="btn bs" onclick="addTournament()">✓ Create</button>
+        <button class="btn bgr" onclick="toggleFormCard('addTourForm')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tourListEl">
+    <div class="empty"><span class="empty-icon">🏆</span>No tournaments yet.<br>Create your first one!</div>
+  </div>
+</div>
+
+<!-- ═══════ PLAYERS PAGE ═══════ -->
+<div class="page" id="page-players">
+  <div class="sec">
+    <span>Players <span class="sec-count" id="playerCount">0</span></span>
+    <button class="btn bp bsm" style="width:auto;padding:5px 12px" onclick="toggleFormCard('addPlayerForm')">+ Add</button>
+  </div>
+
+  <div class="form-card" id="addPlayerForm" style="display:none">
+    <div class="form-hd">
+      <div class="form-title">Add Player</div>
+      <div class="icon-btn" onclick="toggleFormCard('addPlayerForm')">✕</div>
+    </div>
+    <div class="form-bd">
+      <!-- Image Upload -->
+      <div class="ig">
+        <label>Player Photo (imgbb)</label>
+        <div class="img-upload-area" id="imgUploadArea" onclick="triggerImgUpload()">
+          <input type="file" id="imgFileInput" accept="image/*" onchange="uploadImage(this)">
+          <div id="imgPreviewArea">
+            <div style="font-size:28px;margin-bottom:4px">📷</div>
+            <div class="img-upload-text">Tap to upload photo</div>
+          </div>
+        </div>
+        <input type="hidden" id="npImg" value="">
+      </div>
+      <div class="ig"><label>Full Name</label><input type="text" id="npName" placeholder="e.g. Sakib Ahmed"></div>
+      <div class="ig row2" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="ig" style="margin:0">
+          <label>Role</label>
+          <select id="npRole">
+            <option value="bat">Batsman</option>
+            <option value="bowl">Bowler</option>
+            <option value="all">All-Rounder</option>
+            <option value="wk">Wicket Keeper</option>
+          </select>
+        </div>
+        <div class="ig" style="margin:0">
+          <label>Type</label>
+          <select id="npType">
+            <option value="local">Local</option>
+            <option value="home">Home</option>
+            <option value="away">Away</option>
+          </select>
+        </div>
+      </div>
+      <div class="ig"><label>Base Price (৳)</label><input type="number" id="npBase" value="5000"></div>
+      <div class="ig"><label>Stats / Notes</label><input type="text" id="npStats" placeholder="e.g. Right-hand bat, Medium pace"></div>
+      <div class="b2">
+        <button class="btn bs" onclick="addPlayer()">✓ Add Player</button>
+        <button class="btn bgr" onclick="toggleFormCard('addPlayerForm')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search + Filter -->
+  <div class="search-bar"><span style="color:#444">🔍</span><input type="text" id="playerSearch" placeholder="Search players..." oninput="renderPlayers()"></div>
+  <div class="filter-row" id="playerFilters">
+    <div class="fpill active" onclick="setFilter('all',this)">All</div>
+    <div class="fpill" onclick="setFilter('available',this)">Available</div>
+    <div class="fpill" onclick="setFilter('sold',this)">Sold</div>
+    <div class="fpill" onclick="setFilter('unsold',this)">Unsold</div>
+    <div class="fpill" onclick="setFilter('home',this)">Home</div>
+    <div class="fpill" onclick="setFilter('away',this)">Away</div>
+  </div>
+
+  <!-- Copy from other tournament -->
+  <div style="padding:0 14px 12px;">
+    <button class="btn bor bsm" onclick="openCopyModal()">📋 Copy from Another Tournament</button>
+  </div>
+
+  <div id="playerListEl">
+    <div class="empty"><span class="empty-icon">👤</span>No players yet.</div>
+  </div>
+</div>
+
+<!-- ═══════ TEAMS PAGE ═══════ -->
+<div class="page" id="page-teams">
+  <div class="sec">
+    <span>Teams</span>
+    <button class="btn bp bsm" style="width:auto;padding:5px 12px" onclick="toggleFormCard('addTeamForm')">+ Add</button>
+  </div>
+
+  <div class="form-card" id="addTeamForm" style="display:none">
+    <div class="form-hd">
+      <div class="form-title">Add Team</div>
+      <div class="icon-btn" onclick="toggleFormCard('addTeamForm')">✕</div>
+    </div>
+    <div class="form-bd">
+      <div class="ig"><label>Team Name</label><input type="text" id="ntName" placeholder="e.g. Dhaka Dynamites"></div>
+      <div class="ig"><label>Manager Name</label><input type="text" id="ntManager" placeholder="e.g. Rahim Bhai"></div>
+      <div class="ig row2" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="ig" style="margin:0"><label>Budget (৳)</label><input type="number" id="ntBudget" value="500000"></div>
+        <div class="ig" style="margin:0"><label>Color</label><input type="color" id="ntColor" value="#00e5ff"></div>
+      </div>
+      <div class="b2">
+        <button class="btn bs" onclick="addTeam()">✓ Add Team</button>
+        <button class="btn bgr" onclick="toggleFormCard('addTeamForm')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="teamListEl">
+    <div class="empty"><span class="empty-icon">🏆</span>No teams yet.</div>
+  </div>
+</div>
+
+<!-- ═══════ SETTINGS PAGE ═══════ -->
+<div class="page" id="page-settings">
+  <div class="sec">Settings</div>
+  <div style="margin:0 14px 14px">
+    <div style="background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.2);border-radius:10px;padding:10px 13px;font-size:11px;color:var(--gn);margin-bottom:14px;font-weight:600;">
+      🔥 Firebase: auctiontable-bb663 · Test Mode
+    </div>
+
+    <!-- imgbb API Key -->
+    <div class="form-card">
+      <div class="form-hd"><div class="form-title">imgbb API Key</div></div>
+      <div class="form-bd">
+        <div class="ig">
+          <label>API Key (from imgbb.com/api)</label>
+          <input type="text" id="imgbbKey" placeholder="Get free key at imgbb.com/api">
+        </div>
+        <button class="btn bs" onclick="saveImgbbKey()">💾 Save Key</button>
+        <div style="font-size:10px;color:#444;margin-top:8px;line-height:1.6">Free account at imgbb.com → API → Generate key</div>
+      </div>
+    </div>
+
+    <!-- Active Tournament Settings -->
+    <div class="form-card" style="margin-top:12px" id="tourSettingsCard">
+      <div class="form-hd"><div class="form-title" id="tourSettingsTitle">Tournament Settings</div></div>
+      <div class="form-bd">
+        <div class="ig"><label>Timer (seconds)</label><input type="number" id="setTimer" value="30"></div>
+        <div class="ig"><label>Default Base Price (৳)</label><input type="number" id="setBase" value="5000"></div>
+        <div class="ig"><label>Default Budget (৳)</label><input type="number" id="setBudget" value="500000"></div>
+        <button class="btn bs" onclick="saveTourSettings()">💾 Save</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px" class="b2">
+      <button class="btn bd bsm" onclick="resetAllPlayers()">↺ Reset Players</button>
+      <button class="btn bd bsm" onclick="clearTournamentData()">🗑 Clear Data</button>
+    </div>
+
+    <!-- Controller & OBS Links -->
+    <div class="form-card" style="margin-top:12px">
+      <div class="form-hd"><div class="form-title">App Links</div></div>
+      <div class="form-bd">
+        <div style="font-size:11px;color:#555;margin-bottom:8px">Open these files in their respective devices:</div>
+        <div style="background:var(--c2);border-radius:9px;padding:10px;margin-bottom:8px;">
+          <div style="font-size:10px;color:var(--p);font-weight:700;margin-bottom:3px">🎯 AUCTION CONTROLLER</div>
+          <div style="font-size:11px;color:#666">auction-controller.html</div>
+        </div>
+        <div style="background:var(--c2);border-radius:9px;padding:10px;margin-bottom:8px;">
+          <div style="font-size:10px;color:var(--g);font-weight:700;margin-bottom:3px">📺 OBS OVERLAY</div>
+          <div style="font-size:11px;color:#666">auction-obs.html — 1920×1080 transparent</div>
+        </div>
+        <div style="background:var(--c2);border-radius:9px;padding:10px;">
+          <div style="font-size:10px;color:var(--gn);font-weight:700;margin-bottom:3px">📱 TEAM MANAGER BID</div>
+          <div style="font-size:11px;color:#666">auction-bid.html — Share link per team</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchPage('tournaments',this)"><span class="ic">🏆</span><span class="lb">Leagues</span></div>
+  <div class="tab" onclick="switchPage('players',this)"><span class="ic">👥</span><span class="lb">Players</span></div>
+  <div class="tab" onclick="switchPage('teams',this)"><span class="ic">👕</span><span class="lb">Teams</span></div>
+  <div class="tab" onclick="switchPage('settings',this)"><span class="ic">⚙️</span><span class="lb">Settings</span></div>
+</div>
+
+<script>
+const DB="https://auctiontable-bb663-default-rtdb.firebaseio.com";
+const fb={
+  async get(p){try{const r=await fetch(`${DB}/${p}.json`);return r.ok?await r.json():null;}catch{return null;}},
+  async set(p,d){try{await fetch(`${DB}/${p}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});}catch{}},
+  async patch(p,d){try{await fetch(`${DB}/${p}.json`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});}catch{}},
+  async push(p,d){try{const r=await fetch(`${DB}/${p}.json`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});return r.ok?(await r.json()):null;}catch{return null;}},
+  async del(p){try{await fetch(`${DB}/${p}.json`,{method:'DELETE'});}catch{}}
+};
+
+let S={tournaments:{},activeTourId:null,players:{},teams:{},settings:{}};
+let playerFilter='all', imgbbApiKey='', copySourceTourId=null, copySelected=new Set();
+
+// ═══ INIT ═══
+(async function(){
+  // Load imgbb key
+  imgbbApiKey = localStorage.getItem('imgbb_key')||'';
+  if(imgbbApiKey) document.getElementById('imgbbKey').value=imgbbApiKey;
+
+  // Load active tournament
+  S.activeTourId = localStorage.getItem('activeTourId')||null;
+
+  // Poll tournaments
+  pollFast('tournaments', d=>{
+    S.tournaments=d||{};
+    renderTournaments();
+    if(S.activeTourId && S.tournaments[S.activeTourId]) updateActiveBadge();
+  });
+
+  if(S.activeTourId) loadActiveTournament();
+
+  // Test connection
+  const t=await fb.get('.info/connected');
+  setConn(true);
+})();
+
+function pollFast(path,cb){
+  let last=undefined;
+  async function run(){
+    const v=await fb.get(path);
+    const s=JSON.stringify(v);
+    if(s!==JSON.stringify(last)){last=v;cb(v);}
+  }
+  run();setInterval(run,2000);
+}
+
+function pollPath(path,cb,ms=1500){
+  let last=undefined;
+  async function run(){
+    const v=await fb.get(path);
+    const s=JSON.stringify(v);
+    if(s!==JSON.stringify(last)){last=v;cb(v);}
+  }
+  run();setInterval(run,ms);
+}
+
+function setConn(ok){
+  document.getElementById('dot').className='dot'+(ok?' ok':'');
+  document.getElementById('stxt').textContent=ok?'Online':'Offline';
+}
+
+function loadActiveTournament(){
+  if(!S.activeTourId) return;
+  const base=`tours/${S.activeTourId}`;
+  pollPath(base+'/players',d=>{S.players=d||{};renderPlayers();updatePlayerCount();},1500);
+  pollPath(base+'/teams',d=>{S.teams=d||{};renderTeams();},2000);
+  pollPath(base+'/settings',d=>{
+    if(!d)return;
+    S.settings=d;
+    document.getElementById('setTimer').value=d.timerDuration||30;
+    document.getElementById('setBase').value=d.defaultBasePrice||5000;
+    document.getElementById('setBudget').value=d.defaultBudget||500000;
+    const t=S.tournaments[S.activeTourId];
+    if(t) document.getElementById('tourSettingsTitle').textContent=t.name+' Settings';
+  },5000);
+}
+
+// ═══ TOURNAMENTS ═══
+async function addTournament(){
+  const nm=document.getElementById('tName').value.trim();
+  if(!nm){toast('Enter tournament name!');return;}
+  const code=(document.getElementById('tCode').value||nm.slice(0,6)).toUpperCase();
+  const tour={
+    name:nm, code, icon:document.getElementById('tIcon').value||'🏏',
+    color:document.getElementById('tColor').value,
+    defaultBudget:parseInt(document.getElementById('tBudget').value)||500000,
+    defaultBasePrice:parseInt(document.getElementById('tBasePrice').value)||5000,
+    timerDuration:parseInt(document.getElementById('tTimer').value)||30,
+    createdAt:Date.now()
+  };
+  const r=await fb.push('tournaments',tour);
+  if(r){
+    // Init settings for this tournament
+    await fb.set(`tours/${r.name}/settings`,{timerDuration:tour.timerDuration,defaultBasePrice:tour.defaultBasePrice,defaultBudget:tour.defaultBudget,tournamentName:nm});
+    toast(nm+' created!');
+    toggleFormCard('addTourForm');
+    // Auto-activate
+    setActiveTournament(r.name);
+  }
+}
+
+async function setActiveTournament(id){
+  S.activeTourId=id;
+  localStorage.setItem('activeTourId',id);
+  const t=S.tournaments[id];
+  if(t){
+    updateActiveBadge();
+    document.getElementById('openAppBtn').style.display='block';
+    // Set active in firebase
+    await fb.set('activeTourn',{id,name:t.name,code:t.code,color:t.color});
+    loadActiveTournament();
+    toast('Active: '+t.name);
+  }
+}
+
+function updateActiveBadge(){
+  const t=S.tournaments[S.activeTourId];
+  if(t) document.getElementById('activeTourPill').textContent=t.icon+' '+t.code;
+}
+
+async function deleteTournament(id){
+  const t=S.tournaments[id];
+  if(!confirm('Delete "'+t.name+'" and ALL its data?'))return;
+  await fb.del('tournaments/'+id);
+  await fb.del('tours/'+id);
+  if(S.activeTourId===id){S.activeTourId=null;localStorage.removeItem('activeTourId');document.getElementById('activeTourPill').textContent='No Tournament';}
+  toast(t.name+' deleted');
+}
+
+function renderTournaments(){
+  const el=document.getElementById('tourListEl');
+  const entries=Object.entries(S.tournaments).sort((a,b)=>b[1].createdAt-a[1].createdAt);
+  if(!entries.length){el.innerHTML='<div class="empty"><span class="empty-icon">🏆</span>No tournaments yet.<br>Create your first one!</div>';return;}
+  el.innerHTML='<div style="padding:0 14px 14px">'+entries.map(([id,t])=>{
+    const isActive=id===S.activeTourId;
+    return`<div style="background:var(--c);border:1px solid ${isActive?'rgba(0,229,255,.3)':'var(--b)'};border-radius:14px;padding:14px;margin-bottom:8px;${isActive?'box-shadow:0 0 20px rgba(0,229,255,.08)':''}">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:42px;height:42px;border-radius:10px;background:${t.color}22;border:1px solid ${t.color}44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${t.icon||'🏏'}</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:700;color:#ddd">${t.name}</div>
+          <div style="font-size:10px;color:#555;margin-top:2px">${t.code} · Budget: ৳${fmt(t.defaultBudget)} · Timer: ${t.timerDuration}s</div>
+        </div>
+        ${isActive?'<div style="font-size:10px;font-weight:700;color:var(--p);background:rgba(0,229,255,.1);padding:3px 8px;border-radius:20px;border:1px solid rgba(0,229,255,.2)">ACTIVE</div>':''}
+      </div>
+      <div class="b3" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+        <button class="btn bp bsm" onclick="setActiveTournament('${id}')">${isActive?'✓ Active':'▶ Activate'}</button>
+        <button class="btn bsm bo" onclick="goToPlayers('${id}')">👥 Players</button>
+        <button class="btn bd bsm" onclick="deleteTournament('${id}')">🗑 Delete</button>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function goToPlayers(id){
+  if(id!==S.activeTourId) setActiveTournament(id);
+  switchPage('players',document.querySelectorAll('.tab')[1]);
+}
+
+// ═══ IMAGE UPLOAD (imgbb) ═══
+function triggerImgUpload(){ /* handled by input onclick */ }
+
+async function uploadImage(input){
+  const file=input.files[0];if(!file)return;
+  const key=imgbbApiKey||localStorage.getItem('imgbb_key');
+  if(!key){toast('Add imgbb API key in Settings!');return;}
+
+  const prev=document.getElementById('imgPreviewArea').innerHTML;
+  document.getElementById('imgPreviewArea').innerHTML='<div class="img-spinner"></div><div class="img-upload-text">Uploading...</div>';
+
+  try{
+    const fd=new FormData();
+    fd.append('image',file);
+    const r=await fetch(`https://api.imgbb.com/1/upload?key=${key}`,{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.success){
+      const url=d.data.url;
+      document.getElementById('npImg').value=url;
+      document.getElementById('imgPreviewArea').innerHTML=`<img src="${url}" class="img-preview"><div class="img-upload-text" style="color:var(--gn)">✓ Uploaded</div>`;
+      toast('Photo uploaded!');
+    }else{
+      document.getElementById('imgPreviewArea').innerHTML=prev;
+      toast('Upload failed: '+d.error.message);
+    }
+  }catch(e){
+    document.getElementById('imgPreviewArea').innerHTML=prev;
+    toast('Upload error!');
+  }
+}
+
+// ═══ PLAYERS ═══
+async function addPlayer(){
+  if(!S.activeTourId){toast('Select a tournament first!');return;}
+  const nm=document.getElementById('npName').value.trim();
+  if(!nm){toast('Enter player name!');return;}
+  const t=S.tournaments[S.activeTourId];
+  const base=document.getElementById(`npBase`).value;
+  await fb.push(`tours/${S.activeTourId}/players`,{
+    name:nm,
+    role:document.getElementById('npRole').value,
+    type:document.getElementById('npType').value,
+    basePrice:parseInt(base)||t?.defaultBasePrice||5000,
+    stats:document.getElementById('npStats').value.trim(),
+    img:document.getElementById('npImg').value||'',
+    status:'available',
+    order:Date.now()
+  });
+  document.getElementById('npName').value='';
+  document.getElementById('npStats').value='';
+  document.getElementById('npImg').value='';
+  document.getElementById('imgPreviewArea').innerHTML='<div style="font-size:28px;margin-bottom:4px">📷</div><div class="img-upload-text">Tap to upload photo</div>';
+  toggleFormCard('addPlayerForm');
+  toast(nm+' added!');
+}
+
+async function deletePlayer(id){
+  const p=S.players[id];
+  if(!confirm('Delete '+p.name+'?'))return;
+  await fb.del(`tours/${S.activeTourId}/players/${id}`);
+  toast(p.name+' removed');
+}
+
+async function resetAllPlayers(){
+  if(!S.activeTourId)return;
+  if(!confirm('Reset all players to Available status?'))return;
+  const u={};
+  Object.keys(S.players).forEach(id=>{
+    u[id+'/status']='available';u[id+'/soldTo']=null;u[id+'/soldToName']=null;u[id+'/soldPrice']=null;
+  });
+  await fb.patch(`tours/${S.activeTourId}/players`,u);
+  // Reset auction
+  await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:30,timerDuration:30,tourId:S.activeTourId});
+  toast('Players reset!');
+}
+
+let activeFilter='all';
+function setFilter(f,el){
+  activeFilter=f;
+  document.querySelectorAll('.fpill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderPlayers();
+}
+
+function renderPlayers(){
+  if(!S.activeTourId){document.getElementById('playerListEl').innerHTML='<div class="empty"><span class="empty-icon">🎯</span>Select a tournament first.</div>';return;}
+  const search=document.getElementById('playerSearch').value.toLowerCase();
+  let entries=Object.entries(S.players).sort((a,b)=>(a[1].order||0)-(b[1].order||0));
+
+  if(activeFilter!=='all'){
+    entries=entries.filter(([,p])=>{
+      if(activeFilter==='home')return p.type==='home';
+      if(activeFilter==='away')return p.type==='away';
+      return p.status===activeFilter;
+    });
+  }
+  if(search) entries=entries.filter(([,p])=>p.name.toLowerCase().includes(search));
+
+  updatePlayerCount();
+
+  if(!entries.length){document.getElementById('playerListEl').innerHTML='<div class="empty"><span class="empty-icon">👤</span>No players found.</div>';return;}
+
+  const roleMap={bat:'b-bat',bowl:'b-bowl',all:'b-all',wk:'b-wk'};
+  const roleLabel={bat:'BAT',bowl:'BOWL',all:'ALL',wk:'WK'};
+  const typeMap={home:'b-home',away:'b-away',local:''};
+  const statusMap={available:'b-avail',sold:'b-sold',unsold:'b-unsold',active:'b-avail'};
+
+  document.getElementById('playerListEl').innerHTML='<div class="player-grid">'+entries.map(([id,p])=>`
+    <div class="p-card">
+      <div class="p-card-top">
+        ${p.img
+          ?`<img src="${p.img}" class="p-avatar" onerror="this.style.display='none'">`
+          :`<div class="p-avatar-placeholder">👤</div>`}
+        <div class="p-info">
+          <div class="p-name">${p.name}</div>
+          <div class="p-meta">${p.stats||'No info'}</div>
+          <div class="p-badges">
+            <span class="badge ${roleMap[p.role]||'b-bat'}">${roleLabel[p.role]||'BAT'}</span>
+            ${p.type&&p.type!=='local'?`<span class="badge ${typeMap[p.type]||''}">${p.type.toUpperCase()}</span>`:''}
+            <span class="badge ${statusMap[p.status]||'b-avail'}">${p.status||'available'}</span>
+            ${p.soldToName?`<span class="badge" style="background:rgba(255,215,0,.1);color:var(--g)">→ ${p.soldToName}</span>`:''}
+          </div>
+        </div>
+        <div class="p-price">৳${fmt(p.basePrice)}</div>
+      </div>
+      <div class="p-card-actions">
+        <button class="btn bsm bo" style="padding:7px" onclick="editPlayer('${id}')">✏ Edit</button>
+        <button class="btn bsm bd" style="padding:7px" onclick="deletePlayer('${id}')">✕ Delete</button>
+      </div>
+    </div>`).join('')+'</div>';
+}
+
+function updatePlayerCount(){
+  const all=Object.values(S.players);
+  document.getElementById('playerCount').textContent=all.length+' ('+all.filter(p=>p.status==='sold').length+' sold)';
+}
+
+async function editPlayer(id){
+  const p=S.players[id];
+  const newName=prompt('Player name:',p.name);if(newName===null)return;
+  const newBase=prompt('Base price:',p.basePrice);if(newBase===null)return;
+  const newStats=prompt('Stats:',p.stats||'');if(newStats===null)return;
+  await fb.patch(`tours/${S.activeTourId}/players/${id}`,{name:newName.trim(),basePrice:parseInt(newBase)||p.basePrice,stats:newStats.trim()});
+  toast('Updated!');
+}
+
+// ═══ COPY PLAYERS ═══
+async function openCopyModal(){
+  if(!S.activeTourId){toast('Select a tournament first!');return;}
+  const tours=Object.entries(S.tournaments).filter(([id])=>id!==S.activeTourId);
+  if(!tours.length){toast('No other tournaments to copy from!');return;}
+
+  // Let user pick source tournament
+  const opts=tours.map(([id,t])=>t.name+' ('+t.code+')').join('\n');
+  const choice=prompt('Which tournament to copy from?\n'+tours.map(([id,t],i)=>`${i+1}. ${t.name}`).join('\n')+'\n\nEnter number:');
+  const idx=parseInt(choice)-1;
+  if(isNaN(idx)||idx<0||idx>=tours.length)return;
+
+  copySourceTourId=tours[idx][0];
+  const srcPlayers=await fb.get(`tours/${copySourceTourId}/players`)||{};
+  copySelected=new Set();
+
+  document.getElementById('copyModalSub').textContent='From: '+tours[idx][1].name+' → '+S.tournaments[S.activeTourId].name;
+  const entries=Object.entries(srcPlayers);
+  document.getElementById('copyPlayerList').innerHTML=entries.map(([id,p])=>`
+    <div class="copy-player-item" id="cpi-${id}" onclick="toggleCopyPlayer('${id}')">
+      <div class="cpi-check" id="cpiCheck-${id}"></div>
+      ${p.img?`<img src="${p.img}" style="width:32px;height:32px;border-radius:7px;object-fit:cover">`:
+        '<div style="width:32px;height:32px;border-radius:7px;background:var(--c3);display:flex;align-items:center;justify-content:center;font-size:14px">👤</div>'}
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#ddd">${p.name}</div>
+      <div style="font-size:10px;color:#555">${(p.role||'bat').toUpperCase()} · ৳${fmt(p.basePrice)}</div></div>
+    </div>`).join('');
+
+  document.getElementById('copyModal').classList.add('show');
+}
+
+function toggleCopyPlayer(id){
+  if(copySelected.has(id)){copySelected.delete(id);document.getElementById('cpi-'+id).classList.remove('checked');document.getElementById('cpiCheck-'+id).textContent='';}
+  else{copySelected.add(id);document.getElementById('cpi-'+id).classList.add('checked');document.getElementById('cpiCheck-'+id).textContent='✓';}
+}
+
+function selectAllCopy(){
+  document.querySelectorAll('.copy-player-item').forEach(el=>{
+    const id=el.id.replace('cpi-','');
+    copySelected.add(id);el.classList.add('checked');
+    document.getElementById('cpiCheck-'+id).textContent='✓';
+  });
+}
+function clearAllCopy(){
+  copySelected.clear();
+  document.querySelectorAll('.copy-player-item').forEach(el=>{el.classList.remove('checked');});
+  document.querySelectorAll('[id^=cpiCheck-]').forEach(el=>{el.textContent='';});
+}
+
+async function doCopyPlayers(){
+  if(!copySelected.size){toast('Select players first!');return;}
+  const srcPlayers=await fb.get(`tours/${copySourceTourId}/players`)||{};
+  let count=0;
+  for(const id of copySelected){
+    const p=srcPlayers[id];
+    if(p){
+      const copy={...p,status:'available',soldTo:null,soldToName:null,soldPrice:null,order:Date.now()+count};
+      delete copy.soldTo;delete copy.soldToName;delete copy.soldPrice;
+      await fb.push(`tours/${S.activeTourId}/players`,copy);
+      count++;
+    }
+  }
+  closeModal('copyModal');
+  toast(count+' players copied!');
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+
+// ═══ TEAMS ═══
+async function addTeam(){
+  if(!S.activeTourId){toast('Select a tournament first!');return;}
+  const nm=document.getElementById('ntName').value.trim();
+  if(!nm){toast('Enter team name!');return;}
+  const t=S.tournaments[S.activeTourId];
+  const bgt=parseInt(document.getElementById('ntBudget').value)||t?.defaultBudget||500000;
+  const teamId = await fb.push(`tours/${S.activeTourId}/teams`,{
+    name:nm,manager:document.getElementById('ntManager').value.trim()||nm,
+    initialBudget:bgt,currentBudget:bgt,
+    color:document.getElementById('ntColor').value,
+    players:[],createdAt:Date.now()
+  });
+  document.getElementById('ntName').value='';document.getElementById('ntManager').value='';
+  toggleFormCard('addTeamForm');
+  toast(nm+' added!');
+}
+
+async function deleteTeam(id){
+  const t=S.teams[id];
+  if(!confirm('Delete team '+t.name+'?'))return;
+  await fb.del(`tours/${S.activeTourId}/teams/${id}`);
+  toast(t.name+' deleted');
+}
+
+async function editTeamBudget(id){
+  const t=S.teams[id];
+  const nb=prompt(t.name+' — new budget:',t.currentBudget);
+  if(nb!==null&&!isNaN(parseInt(nb))){await fb.patch(`tours/${S.activeTourId}/teams/${id}`,{currentBudget:parseInt(nb)});toast('Budget updated!');}
+}
+
+function renderTeams(){
+  const el=document.getElementById('teamListEl');
+  const entries=Object.entries(S.teams).sort((a,b)=>(a[1].createdAt||0)-(b[1].createdAt||0));
+  if(!entries.length){el.innerHTML='<div class="empty"><span class="empty-icon">🏆</span>No teams yet.</div>';return;}
+  el.innerHTML='<div style="padding:0 14px 14px">'+entries.map(([id,t])=>`
+    <div style="background:var(--c);border:1px solid var(--b);border-left:3px solid ${t.color||'var(--p)'};border-radius:12px;padding:14px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#ddd">${t.name}</div>
+          <div style="font-size:11px;color:#555;margin-top:2px">Manager: ${t.manager||'-'} · ${(t.players||[]).length} players</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Orbitron',monospace;font-size:17px;color:var(--g)">৳${fmt(t.currentBudget)}</div>
+          <div style="font-size:10px;color:#444">/ ৳${fmt(t.initialBudget)}</div>
+        </div>
+      </div>
+      <div class="manager-link-box">
+        <div style="font-size:10px;color:#555;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.8px">Manager Bid Link</div>
+        <div class="link-url" id="link-${id}">auction-bid.html?t=${S.activeTourId}&team=${id}</div>
+        <button class="btn bp bsm" style="margin-top:6px" onclick="copyManagerLink('${id}')">📋 Copy Link</button>
+      </div>
+      <div class="b2" style="margin-top:8px">
+        <button class="btn bsm bo" onclick="editTeamBudget('${id}')">✏ Budget</button>
+        <button class="btn bsm bd" onclick="deleteTeam('${id}')">✕ Delete</button>
+      </div>
+    </div>`).join('')+'</div>';
+}
+
+function copyManagerLink(teamId){
+  const url=`auction-bid.html?t=${S.activeTourId}&team=${teamId}`;
+  navigator.clipboard?.writeText(url).then(()=>toast('Link copied!')).catch(()=>{
+    const el=document.getElementById('link-'+teamId);
+    const r=document.createRange();r.selectNode(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);
+    toast('Select & copy the link!');
+  });
+}
+
+// ═══ SETTINGS ═══
+async function saveTourSettings(){
+  if(!S.activeTourId){toast('No active tournament!');return;}
+  const s={timerDuration:parseInt(document.getElementById('setTimer').value)||30,defaultBasePrice:parseInt(document.getElementById('setBase').value)||5000,defaultBudget:parseInt(document.getElementById('setBudget').value)||500000,tournamentName:S.tournaments[S.activeTourId]?.name||''};
+  await fb.set(`tours/${S.activeTourId}/settings`,s);
+  await fb.patch(`auction`,{timerDuration:s.timerDuration,tourId:S.activeTourId});
+  toast('Settings saved!');
+}
+
+function saveImgbbKey(){
+  const k=document.getElementById('imgbbKey').value.trim();
+  imgbbApiKey=k;localStorage.setItem('imgbb_key',k);
+  toast('imgbb key saved!');
+}
+
+async function clearTournamentData(){
+  if(!S.activeTourId){toast('No active tournament!');return;}
+  if(!confirm('Clear all players, teams and auction data for this tournament?'))return;
+  await fb.del(`tours/${S.activeTourId}/players`);
+  await fb.del(`tours/${S.activeTourId}/teams`);
+  await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:30,timerDuration:30,tourId:S.activeTourId});
+  toast('Data cleared!');
+}
+
+// ═══ UTILS ═══
+function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return(n/100000).toFixed(1)+'L';if(n>=1000)return(n/1000).toFixed(n%1000===0?0:1)+'K';return n+'';}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
+function switchPage(nm,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+nm).classList.add('active');
+  if(el) el.classList.add('active');
+}
+function toggleFormCard(id){const el=document.getElementById(id);el.style.display=el.style.display==='none'||!el.style.display?'block':'none';}
+function openApp(){window.location.href='auction-controller.html';}
+</script>
+</body>
+</html>

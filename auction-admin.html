@@ -3,6 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script>
+// ── PASSWORD GATE ──
+const PASS = 'Tus@900#';
+(function(){
+  if(sessionStorage.getItem('admin_auth')==='1') return;
+  document.addEventListener('DOMContentLoaded', function(){
+    document.body.style.display='none';
+    const lock = document.createElement('div');
+    lock.id='lockScreen';
+    lock.innerHTML=`
+    <div style="position:fixed;inset:0;background:#080c16;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:'Inter',sans-serif;">
+      <div style="background:#0f1623;border:1px solid rgba(0,229,255,.2);border-radius:20px;padding:36px 32px;width:320px;text-align:center;box-shadow:0 0 80px rgba(0,229,255,.06);">
+        <div style="font-size:40px;margin-bottom:12px">🔐</div>
+        <div style="font-family:monospace;font-size:18px;font-weight:900;color:#00e5ff;letter-spacing:3px;margin-bottom:4px">AUCTION ADMIN</div>
+        <div style="font-size:11px;color:#333;letter-spacing:2px;margin-bottom:24px;text-transform:uppercase">Enter Password</div>
+        <input id="passInput" type="password" placeholder="Password"
+          style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px;color:#fff;font-size:15px;outline:none;text-align:center;letter-spacing:3px;font-family:monospace;margin-bottom:10px;"
+          onkeydown="if(event.key==='Enter')checkPass()">
+        <div id="passErr" style="font-size:11px;color:#ff3366;min-height:16px;margin-bottom:10px;font-weight:600;"></div>
+        <button onclick="checkPass()"
+          style="width:100%;padding:13px;background:linear-gradient(135deg,#00b4d8,#0077b6);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:1px;">
+          UNLOCK
+        </button>
+      </div>
+    </div>`;
+    document.body.parentNode.insertBefore(lock, document.body);
+    setTimeout(()=>document.getElementById('passInput').focus(), 100);
+  });
+})();
+function checkPass(){
+  const v=document.getElementById('passInput').value;
+  if(v===PASS){
+    sessionStorage.setItem('admin_auth','1');
+    document.getElementById('lockScreen').remove();
+    document.body.style.display='';
+  } else {
+    const e=document.getElementById('passErr');
+    e.textContent='❌ Wrong password!';
+    document.getElementById('passInput').value='';
+    document.getElementById('passInput').focus();
+    setTimeout(()=>e.textContent='',2500);
+  }
+}
+</script>
 <title>Auction Admin</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@700;900&display=swap');
@@ -107,6 +151,20 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 </style>
 </head>
 <body>
+
+<!-- PASSWORD LOCK -->
+<div id="lockScreen" style="position:fixed;inset:0;background:#080c16;z-index:9999;display:flex;align-items:center;justify-content:center;">
+  <div style="background:#0f1623;border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:40px 32px;width:320px;text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px">🔒</div>
+    <div style="font-family:Orbitron,monospace;font-size:16px;font-weight:900;color:#00e5ff;letter-spacing:2px;margin-bottom:4px">AUCTION ADMIN</div>
+    <div style="font-size:11px;color:#444;margin-bottom:24px;text-transform:uppercase;letter-spacing:1px">Enter Password</div>
+    <input type="password" id="pwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPw()"
+      style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:13px 16px;color:#fff;font-family:Inter,sans-serif;font-size:18px;outline:none;text-align:center;letter-spacing:6px;margin-bottom:10px;">
+    <div style="font-size:11px;color:#ff3366;min-height:16px;margin-bottom:12px" id="pwErr"></div>
+    <button onclick="checkPw()" style="width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,#00b4d8,#0077b6);color:#fff;font-family:Inter,sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.5px">Unlock</button>
+  </div>
+</div>
+
 
 <div class="hdr">
   <div>
@@ -321,6 +379,28 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 </div>
 
 <script>
+
+// ══ PASSWORD ══
+const ADMIN_PASS = 'auction2025'; // Change this password
+function checkPw(){
+  const val = document.getElementById('pwInput').value;
+  if(val === ADMIN_PASS){
+    document.getElementById('lockScreen').style.display='none';
+    sessionStorage.setItem('adminUnlocked','1');
+  } else {
+    document.getElementById('pwErr').textContent = 'Wrong password!';
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
+    setTimeout(()=>document.getElementById('pwErr').textContent='', 2000);
+  }
+}
+// Auto-unlock if already unlocked this session
+if(sessionStorage.getItem('adminUnlocked')==='1'){
+  document.getElementById('lockScreen').style.display='none';
+}
+// Focus input
+document.getElementById('pwInput').focus();
+
 // ══════════════════════════════
 // FIREBASE
 // ══════════════════════════════

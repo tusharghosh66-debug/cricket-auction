@@ -715,7 +715,7 @@ function renderPlayers(){
             (p.soldToName?'<span class="badge" style="background:rgba(255,215,0,.1);color:var(--g)">→ '+p.soldToName+'</span>':'')+
           '</div>'+
         '</div>'+
-        '<div class="p-price">fmt(p.basePrice)+'</div>'+
+        '<div class="p-price">'+fmt(p.basePrice)+'</div>'+
       '</div>'+
       '<div class="p-card-actions">'+
         '<button class="btn bsm bo" style="padding:7px" onclick="editPlayer(\''+id+'\')">✏ Edit</button>'+
@@ -835,7 +835,7 @@ function renderTeams(){
           '<div style="font-size:11px;color:#555;margin-top:2px">Manager: '+(t.manager||'-')+' · '+(t.players||[]).length+' players</div>'+
         '</div>'+
         '<div style="text-align:right">'+
-          '<div style="font-family:Orbitron,monospace;font-size:17px;color:var(--g)">fmt(t.currentBudget)+'</div>'+
+          '<div style="font-family:Orbitron,monospace;font-size:17px;color:var(--g)">'+fmt(t.currentBudget)+'</div>'+
           '<div style="font-size:10px;color:#444">/'+fmt(t.initialBudget)+'</div>'+
         '</div>'+
       '</div>'+
@@ -904,7 +904,7 @@ async function clearData(){
 // ══════════════════════════════
 // UTILS
 // ══════════════════════════════
-function'+fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
+function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
 function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');

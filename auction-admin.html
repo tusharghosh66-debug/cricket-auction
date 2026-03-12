@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
 <title>Auction Admin</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@700;900&display=swap');
@@ -15,8 +14,7 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 .logo{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;color:var(--p);letter-spacing:1px;}
 .tour-pill{background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.25);color:var(--p);font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;cursor:pointer;letter-spacing:.5px;margin-top:2px;display:inline-block;}
 .conn{display:flex;align-items:center;gap:5px;font-size:11px;color:#555;}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--r);}
-.dot.ok{background:var(--gn);}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--r);}.dot.ok{background:var(--gn);}
 .page{display:none;}.page.active{display:block;}
 .tabs{position:fixed;bottom:0;left:0;right:0;background:rgba(8,12,22,.98);border-top:1px solid var(--b);display:grid;grid-template-columns:repeat(4,1fr);z-index:200;}
 .tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 10px;cursor:pointer;}
@@ -24,26 +22,21 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 .tab.active .lb{color:var(--p);}
 .toast{position:fixed;top:66px;left:50%;transform:translateX(-50%) translateY(-14px);background:rgba(8,12,22,.96);border:1px solid var(--p);backdrop-filter:blur(12px);color:#fff;padding:8px 16px;border-radius:40px;font-size:12px;font-weight:600;opacity:0;transition:all .25s;white-space:nowrap;z-index:999;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-/* MODAL */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s;}
 .modal.show{opacity:1;pointer-events:all;}
 .modal-box{background:#0f1623;border:1px solid var(--b);border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:82vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s;}
 .modal.show .modal-box{transform:translateY(0);}
-/* CARD */
 .card{background:var(--c);border:1px solid var(--b);border-radius:14px;margin:0 14px 12px;overflow:hidden;}
 .card-hd{padding:11px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;}
 .card-title{font-size:11px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:1px;}
 .card-bd{padding:14px;}
-/* FORM */
 .ig{margin-bottom:11px;}
 .ig label{display:block;font-size:10px;font-weight:600;color:#555;margin-bottom:5px;text-transform:uppercase;letter-spacing:.8px;}
 .ig input,.ig select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
 .ig input:focus,.ig select:focus{border-color:var(--p);}
 .ig select option{background:#161f30;}
-/* BUTTONS */
 .btn{width:100%;padding:11px;border:none;border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
-.btn:active{transform:scale(.97);}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn:active{transform:scale(.97);}.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 .bp{background:linear-gradient(135deg,#00b4d8,#0077b6);color:#fff;}
 .bs{background:linear-gradient(135deg,#00c853,#007b33);color:#fff;}
 .bd{background:linear-gradient(135deg,#ff3366,#c0002b);color:#fff;}
@@ -54,9 +47,7 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 .bsm{padding:8px 10px;font-size:12px;border-radius:8px;}
 .b2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .b3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
-/* SEC */
 .sec{padding:14px 14px 8px;font-size:10px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;justify-content:space-between;}
-/* BADGE */
 .badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
 .b-bat{background:rgba(0,255,136,.12);color:var(--gn);}
 .b-bowl{background:rgba(255,51,102,.12);color:var(--r);}
@@ -67,7 +58,6 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 .b-sold{background:rgba(255,51,102,.12);color:var(--r);}
 .b-unsold{background:rgba(120,120,120,.12);color:#666;}
 .b-avail{background:rgba(0,200,83,.12);color:var(--gn);}
-/* PLAYER CARD */
 .p-card{background:var(--c);border:1px solid var(--b);border-radius:12px;margin-bottom:8px;overflow:hidden;}
 .p-card-top{display:flex;align-items:center;gap:12px;padding:12px;}
 .p-av{width:48px;height:48px;border-radius:10px;background:var(--c2);flex-shrink:0;object-fit:cover;border:1px solid var(--b);}
@@ -78,39 +68,33 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 .p-badges{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;}
 .p-price{font-family:'Orbitron',monospace;font-size:13px;color:var(--g);font-weight:700;flex-shrink:0;}
 .p-card-actions{display:flex;gap:6px;padding:0 12px 10px;}
-/* IMG UPLOAD */
 .img-up{border:2px dashed rgba(255,255,255,.1);border-radius:10px;padding:16px;text-align:center;cursor:pointer;position:relative;transition:border-color .2s;}
 .img-up:hover{border-color:var(--p);}
 .img-up input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 .img-up img{width:60px;height:60px;border-radius:8px;object-fit:cover;margin:0 auto 6px;display:block;}
-/* COPY PLAYER LIST */
 .cpi{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;border:1px solid var(--b);margin-bottom:6px;cursor:pointer;}
 .cpi.on{background:rgba(0,229,255,.06);border-color:rgba(0,229,255,.3);}
 .cpi-chk{width:20px;height:20px;border-radius:5px;border:2px solid #333;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:#000;}
 .cpi.on .cpi-chk{background:var(--p);border-color:var(--p);}
-/* SEARCH */
 .srch{margin:0 14px 10px;background:var(--c);border:1px solid var(--b);border-radius:10px;padding:10px 13px;display:flex;align-items:center;gap:8px;}
 .srch input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-family:'Inter',sans-serif;font-size:13px;}
 .srch input::placeholder{color:#333;}
-/* FILTER */
 .frow{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto;}.frow::-webkit-scrollbar{display:none;}
 .fp{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--b);color:#555;cursor:pointer;white-space:nowrap;flex-shrink:0;}
 .fp.on{background:rgba(0,229,255,.1);border-color:rgba(0,229,255,.3);color:var(--p);}
-/* MANAGER LINK */
-.mgr-link{background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.15);border-radius:9px;padding:9px 12px;margin-top:8px;}
-.mgr-url{font-size:10px;color:var(--p);word-break:break-all;margin-bottom:6px;font-family:monospace;}
-/* EMPTY */
 .empty{text-align:center;padding:40px 20px;color:#333;font-size:12px;}
 .empty-icon{font-size:40px;margin-bottom:10px;display:block;}
-/* SPIN */
 .spin{width:24px;height:24px;border:3px solid rgba(0,229,255,.1);border-top-color:var(--p);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 8px;}
 @keyframes sp{to{transform:rotate(360deg)}}
+/* Tournament card expand */
+.tour-players-btn{display:block;width:100%;margin-top:8px;padding:10px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.15);border-radius:9px;color:var(--p);font-size:12px;font-weight:700;cursor:pointer;text-align:center;letter-spacing:.5px;}
+.tour-players-btn:active{background:rgba(0,229,255,.12);}
 </style>
 <script>
 const ADMIN_PASS='Tus@900#';
 function doUnlock(){
-  const val=document.getElementById('lockInput').value;
-  if(val===ADMIN_PASS){
+  const v=document.getElementById('lockInput').value;
+  if(v===ADMIN_PASS){
     document.getElementById('lockScreen').style.display='none';
     sessionStorage.setItem('au','1');
   }else{
@@ -148,7 +132,7 @@ function doUnlock(){
 </div>
 <div class="toast" id="toast"></div>
 
-<!-- Copy Players Modal -->
+<!-- Copy Modal -->
 <div class="modal" id="copyModal">
   <div class="modal-box">
     <div style="font-size:14px;font-weight:700;color:var(--p);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Copy Players</div>
@@ -168,8 +152,6 @@ function doUnlock(){
 <!-- ═══ LEAGUES PAGE ═══ -->
 <div class="page active" id="pg0">
   <div class="sec">Tournaments / Leagues</div>
-
-  <!-- ADD FORM -->
   <div style="padding:0 14px 10px">
     <button class="btn bp bsm" onclick="toggleCard('newTourCard')">+ New Tournament</button>
   </div>
@@ -193,18 +175,12 @@ function doUnlock(){
     </div>
   </div>
 
-  <!-- AUCTION CONTROL PANEL -->
+  <!-- AUCTION PANEL -->
   <div id="auctionPanel" style="display:none">
     <div style="margin:0 14px 12px;background:linear-gradient(135deg,#0d1b2a,#1a2744);border:1px solid rgba(0,229,255,.2);border-radius:14px;padding:16px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div>
-          <div style="font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Auction Status</div>
-          <div style="font-family:Orbitron,monospace;font-size:16px;font-weight:700" id="aStatus">IDLE</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Timer</div>
-          <div style="font-family:Orbitron,monospace;font-size:36px;font-weight:900;color:var(--g);line-height:1" id="aTimer">--</div>
-        </div>
+        <div><div style="font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Auction Status</div><div style="font-family:Orbitron,monospace;font-size:16px;font-weight:700" id="aStatus">IDLE</div></div>
+        <div style="text-align:right"><div style="font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Timer</div><div style="font-family:Orbitron,monospace;font-size:36px;font-weight:900;color:var(--g);line-height:1" id="aTimer">--</div></div>
       </div>
       <div id="aBidRow" style="background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.15);border-radius:9px;padding:10px 13px;margin-bottom:12px;display:none">
         <div style="font-size:9px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Current Bid</div>
@@ -217,7 +193,6 @@ function doUnlock(){
         <button class="btn bs" id="aStartBtn" onclick="auctionStart()" style="padding:15px;font-size:15px">▶ START</button>
         <button class="btn bd" id="aStopBtn" onclick="auctionStop()" style="padding:15px;font-size:15px">■ STOP</button>
       </div>
-      <!-- Quick Links -->
       <div style="border-top:1px solid rgba(255,255,255,.05);padding-top:12px">
         <div style="font-size:10px;color:#444;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Quick Links</div>
         <div class="b2">
@@ -241,12 +216,24 @@ function doUnlock(){
 
 <!-- ═══ PLAYERS PAGE ═══ -->
 <div class="page" id="pg1">
-  <div class="sec">
-    <span>Players <span style="font-family:Orbitron,monospace;font-size:11px;color:#555" id="playerCount">0</span></span>
-    <button class="btn bp bsm" style="width:auto;padding:5px 12px" onclick="toggleCard('newPlayerCard')">+ Add</button>
+  <!-- Tournament context header -->
+  <div style="background:linear-gradient(135deg,#0d1b2a,#1a2744);border-bottom:1px solid var(--b);padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-size:11px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Managing Players For</div>
+      <div style="font-size:16px;font-weight:700;color:#ddd" id="pTourName">—</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--p);background:rgba(0,229,255,.1);padding:3px 10px;border-radius:20px;border:1px solid rgba(0,229,255,.2)" id="pTourBadge"></div>
+      <button class="btn bgr bsm" style="width:auto;padding:5px 12px" onclick="goTab(0)">← Back</button>
+    </div>
   </div>
 
-  <div class="card" id="newPlayerCard" style="display:none">
+  <div style="display:flex;gap:8px;padding:12px 14px 4px">
+    <button class="btn bp bsm" style="flex:1" onclick="toggleCard('newPlayerCard')">+ Add Player</button>
+    <button class="btn bor bsm" style="flex:1" onclick="openCopyModal()">📋 Copy Players</button>
+  </div>
+
+  <div class="card" id="newPlayerCard" style="display:none;margin-top:8px">
     <div class="card-hd"><div class="card-title">Add Player</div><button class="btn bgr bsm" style="width:auto;padding:5px 10px" onclick="toggleCard('newPlayerCard')">✕</button></div>
     <div class="card-bd">
       <div class="ig">
@@ -275,7 +262,7 @@ function doUnlock(){
     </div>
   </div>
 
-  <div class="srch"><span style="color:#444">🔍</span><input type="text" id="pSearch" placeholder="Search..." oninput="renderPlayers()"></div>
+  <div class="srch" style="margin-top:8px"><span style="color:#444">🔍</span><input type="text" id="pSearch" placeholder="Search players..." oninput="renderPlayers()"></div>
   <div class="frow" id="pFilters">
     <div class="fp on" onclick="setPF('all',this)">All</div>
     <div class="fp" onclick="setPF('available',this)">Available</div>
@@ -284,10 +271,8 @@ function doUnlock(){
     <div class="fp" onclick="setPF('home',this)">Home</div>
     <div class="fp" onclick="setPF('away',this)">Away</div>
   </div>
-  <div style="padding:0 14px 10px">
-    <button class="btn bor bsm" onclick="openCopyModal()">📋 Copy from Another Tournament</button>
-  </div>
-  <div id="playerList"><div class="empty"><span class="empty-icon">👤</span>No players yet.</div></div>
+  <div style="padding:0 14px 4px;font-size:10px;color:#444;font-weight:700;text-transform:uppercase;letter-spacing:1px" id="playerCount">0 players</div>
+  <div id="playerList"><div class="empty"><span class="empty-icon">👤</span>Tap "Players" on a tournament.</div></div>
 </div>
 
 <!-- ═══ TEAMS PAGE ═══ -->
@@ -351,8 +336,8 @@ function doUnlock(){
   <div class="tab" onclick="goTab(3)"><span class="ic">⚙️</span><span class="lb">Settings</span></div>
 </div>
 
-
 <script>
+
 // ══ SESSION CHECK ══
 if(sessionStorage.getItem('au')==='1'){
   document.getElementById('lockScreen').style.display='none';
@@ -379,6 +364,7 @@ let imgbbKey = localStorage.getItem('imgbb_key') || '';
 let pFilter = 'all';
 let copySourceId = null, copySelected = new Set();
 let auctionTimerInt = null;
+let playerTourId = null; // which tournament's players we're viewing
 
 // ══════════════════════════════
 // INIT
@@ -415,7 +401,8 @@ function startPoll(path, ms, cb){
 }
 
 function loadTour(tid){
-  startPoll('tours/'+tid+'/players', 1500, d=>{players=d||{};renderPlayers();updatePlayerCount();});
+  if(!playerTourId) playerTourId=tid;
+  startPoll('tours/'+tid+'/players', 1500, d=>{if(playerTourId===tid){players=d||{};renderPlayers();updatePlayerCount();}});
   startPoll('tours/'+tid+'/teams', 2000, d=>{teams=d||{};renderTeams();});
   startPoll('tours/'+tid+'/settings', 5000, d=>{
     if(!d)return;
@@ -523,7 +510,19 @@ function renderTournaments(){
 }
 
 function goPlayers(id){
-  if(id!==activeTourId) activateTournament(id);
+  playerTourId = id;
+  // Load this tournament's players (may differ from active)
+  fb.get('tours/'+id+'/players').then(d=>{
+    players = d||{};
+    renderPlayers();
+    updatePlayerCount();
+  });
+  // Update players page header
+  const t = tournaments[id];
+  const pTourName = document.getElementById('pTourName');
+  const pTourBadge = document.getElementById('pTourBadge');
+  if(pTourName) pTourName.textContent = t ? t.name : 'Players';
+  if(pTourBadge) pTourBadge.textContent = t ? (t.icon||'🏏')+' '+t.code : '';
   goTab(1);
 }
 
@@ -639,10 +638,11 @@ async function uploadImg(input){
 // PLAYERS
 // ══════════════════════════════
 async function addPlayer(){
-  if(!activeTourId){toast('Select a tournament first!');return;}
+  const tid = playerTourId||activeTourId;
+  if(!tid){toast('Open a tournament first!');return;}
   const nm = document.getElementById('npName').value.trim();
   if(!nm){toast('Enter player name!');return;}
-  await fb.push('tours/'+activeTourId+'/players',{
+  await fb.push('tours/'+tid+'/players',{
     name:nm, role:document.getElementById('npRole').value,
     type:document.getElementById('npType').value,
     basePrice:parseInt(document.getElementById('npBase').value)||settings.defaultBasePrice||5000,
@@ -661,7 +661,7 @@ async function addPlayer(){
 async function deletePlayer(id){
   const p = players[id];
   if(!confirm('Delete '+p.name+'?')) return;
-  await fb.del('tours/'+activeTourId+'/players/'+id);
+  await fb.del('tours/'+(playerTourId||activeTourId)+'/players/'+id);
   toast(p.name+' removed');
 }
 
@@ -670,7 +670,7 @@ async function editPlayer(id){
   const nm=prompt('Name:',p.name); if(nm===null)return;
   const bp=prompt('Base price:',p.basePrice); if(bp===null)return;
   const st=prompt('Stats:',p.stats||''); if(st===null)return;
-  await fb.patch('tours/'+activeTourId+'/players/'+id,{name:nm.trim(),basePrice:parseInt(bp)||p.basePrice,stats:st.trim()});
+  await fb.patch('tours/'+(playerTourId||activeTourId)+'/players/'+id,{name:nm.trim(),basePrice:parseInt(bp)||p.basePrice,stats:st.trim()});
   toast('Updated!');
 }
 
@@ -683,7 +683,7 @@ function setPF(f,el){
 }
 
 function renderPlayers(){
-  if(!activeTourId){document.getElementById('playerList').innerHTML='<div class="empty"><span class="empty-icon">🎯</span>Select a tournament first.</div>';return;}
+  if(!playerTourId&&!activeTourId){document.getElementById('playerList').innerHTML='<div class="empty"><span class="empty-icon">🎯</span>Tap "Players" on a tournament.</div>';return;}
   const search = document.getElementById('pSearch').value.toLowerCase();
   let entries = Object.entries(players).sort((a,b)=>(a[1].order||0)-(b[1].order||0));
   if(activePF==='available') entries=entries.filter(([,p])=>p.status==='available'||p.status==='active');
@@ -734,8 +734,9 @@ function updatePlayerCount(){
 // COPY PLAYERS
 // ══════════════════════════════
 async function openCopyModal(){
-  if(!activeTourId){toast('Select a tournament first!');return;}
-  const others=Object.entries(tournaments).filter(([id])=>id!==activeTourId);
+  const tid=playerTourId||activeTourId;
+  if(!tid){toast('Open a tournament first!');return;}
+  const others=Object.entries(tournaments).filter(([id])=>id!==tid);
   if(!others.length){toast('No other tournaments!');return;}
   const names=others.map(([id,t],i)=>(i+1)+'. '+t.name).join('\n');
   const choice=prompt('Copy from which tournament?\n'+names+'\n\nEnter number:');
@@ -744,7 +745,8 @@ async function openCopyModal(){
   copySourceId=others[idx][0];
   const srcPlayers=await fb.get('tours/'+copySourceId+'/players')||{};
   copySelected=new Set();
-  document.getElementById('copyModalSub').textContent='From: '+others[idx][1].name+' → '+tournaments[activeTourId].name;
+  const destName = tournaments[tid]?tournaments[tid].name:'current';
+  document.getElementById('copyModalSub').textContent='From: '+others[idx][1].name+' → '+destName;
   const entries=Object.entries(srcPlayers);
   document.getElementById('copyList').innerHTML=entries.map(([id,p])=>
     '<div class="cpi" id="cpi-'+id+'" onclick="toggleCopy(\''+id+'\')">'+
@@ -781,7 +783,7 @@ async function doCopy(){
     if(p){
       const copy={...p,status:'available',soldTo:null,soldToName:null,soldPrice:null,order:Date.now()+n};
       delete copy.soldTo;delete copy.soldToName;delete copy.soldPrice;
-      await fb.push('tours/'+activeTourId+'/players',copy);
+      await fb.push('tours/'+(playerTourId||activeTourId)+'/players',copy);
       n++;
     }
   }
@@ -926,6 +928,7 @@ if(activeTourId){
   document.getElementById('ctrlLink').href=base+'auction-controller.html';
   document.getElementById('obsLink').href=base+'auction-obs.html';
 }
+
 </script>
 </body>
 </html>

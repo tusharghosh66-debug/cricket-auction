@@ -411,7 +411,7 @@ function handle(prev,cur){
   let tk='🏏 AUCTION LIVE';
   if(status==='paused') tk='⏸ PAUSED';
   else if(status==='ended') tk=currentBidderName?'🔨 FINAL — '+currentBidderName.toUpperCase():'❌ NO BIDS';
-  else if(currentBidderName) tk='💰 <span class="hi">'+currentBidderName.toUpperCase()+'</span> leads @ fmt(currentBid);
+  else if(currentBidderName) tk='💰 <span class="hi">'+currentBidderName.toUpperCase()+'</span> leads @'+fmt(currentBid);
   document.getElementById('tickerTxt').innerHTML=tk;
 
   renderTeams(currentBidder);
@@ -466,7 +466,7 @@ function updateCompactCard(p,cur){
   document.getElementById('ccBadges').innerHTML=b;
 
   document.getElementById('ccName').textContent=p.name||'';
-  document.getElementById('ccBase').textContent='Base: fmt(p.basePrice);
+  document.getElementById('ccBase').textContent='Base:'+fmt(p.basePrice);
 
   const ce=document.getElementById('ccBid');
   ce.textContent=fmt(bid);
@@ -492,7 +492,7 @@ function renderTeams(leadId){
           '<div style="font-size:10px;color:#1a1a1a;margin-top:1px">'+(t.players||[]).length+' players</div>'+
         '</div>'+
       '</div>'+
-      '<div class="tb">fmt(t.currentBudget)+'</div>'+
+      '<div class="tb">'+fmt(t.currentBudget)+'</div>'+
     '</div>'
   ).join('');
 }

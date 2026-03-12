@@ -349,7 +349,7 @@ async function submitBid(){
   if(S.auction.currentBidder===teamId){toast('You\'re already leading!');return;}
   const dur=S.settings.timerDuration||30;
   await fb.patch('auction',{currentBid:myBid,currentBidder:teamId,currentBidderName:S.team.name,timer:dur,status:'active'});
-  toast('Bid placed: fmt(myBid));
+  toast('Bid placed:'+fmt(myBid));
 }
 
 function renderSquad(){
@@ -369,7 +369,7 @@ function renderSquad(){
   }).filter(Boolean).join('');
 }
 
-function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
+function'+fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 </script>
 </body>

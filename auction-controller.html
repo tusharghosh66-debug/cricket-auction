@@ -445,11 +445,11 @@ async function placeBid(){
   if(!selTeam){toast('Select a team!');return;}
   const t=S.teams[selTeam];
   if(selBid<=(S.auction.currentBid||0)){toast('Bid must be higher!');return;}
-  if(selBid>t.currentBudget){toast(t.name+' budget: fmt(t.currentBudget));return;}
+  if(selBid>t.currentBudget){toast(t.name+' budget:'+fmt(t.currentBudget));return;}
   const dur=S.settings.timerDuration||30;
   await fb.patch('auction',{currentBid:selBid,currentBidder:selTeam,currentBidderName:t.name,timer:dur,status:'active'});
   startLocalTimer();
-  toast(t.name+' bids fmt(selBid));
+  toast(t.name+' bids'+fmt(selBid));
 }
 
 async function soldPlayer(){
@@ -623,7 +623,7 @@ function renderCtrlTeams(){
     </div>`).join('')+'</div>';
 }
 
-function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
+function'+fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 function switchPage(nm,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));

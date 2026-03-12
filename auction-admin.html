@@ -167,8 +167,8 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
         <div class="ig" style="margin:0"><label>Icon</label><input type="text" id="tIcon" placeholder="🏏" maxlength="4"></div>
         <div class="ig" style="margin:0"><label>Color</label><input type="color" id="tColor" value="#00e5ff"></div>
       </div>
-      <div class="ig"><label>Budget per Team (BDT)</label><input type="number" id="tBudget" value="500000"></div>
-      <div class="ig"><label>Default Base Price (BDT)</label><input type="number" id="tBasePrice" value="5000"></div>
+      <div class="ig"><label>Budget per Team (₹)</label><input type="number" id="tBudget" value="500000"></div>
+      <div class="ig"><label>Default Base Price (₹)</label><input type="number" id="tBasePrice" value="5000"></div>
       <div class="ig"><label>Timer (seconds)</label><input type="number" id="tTimer" value="30" min="10" max="120"></div>
       <div class="b2">
         <button class="btn bs" onclick="addTournament()">Create</button>
@@ -250,7 +250,7 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
           <select id="npType"><option value="local">Local</option><option value="home">Home</option><option value="away">Away</option></select>
         </div>
       </div>
-      <div class="ig"><label>Base Price (BDT)</label><input type="number" id="npBase" value="5000"></div>
+      <div class="ig"><label>Base Price (₹)</label><input type="number" id="npBase" value="5000"></div>
       <div class="ig"><label>Stats / Notes</label><input type="text" id="npStats" placeholder="e.g. Right-hand bat"></div>
       <div class="b2">
         <button class="btn bs" onclick="addPlayer()">Add Player</button>
@@ -286,7 +286,7 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
       <div class="ig"><label>Team Name</label><input type="text" id="ntName" placeholder="e.g. Dhaka Dynamites"></div>
       <div class="ig"><label>Manager Name</label><input type="text" id="ntManager" placeholder="e.g. Rahim"></div>
       <div class="b2" style="margin-bottom:11px">
-        <div class="ig" style="margin:0"><label>Budget (BDT)</label><input type="number" id="ntBudget" value="500000"></div>
+        <div class="ig" style="margin:0"><label>Budget (₹)</label><input type="number" id="ntBudget" value="500000"></div>
         <div class="ig" style="margin:0"><label>Color</label><input type="color" id="ntColor" value="#00e5ff"></div>
       </div>
       <div class="b2">
@@ -315,8 +315,8 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
       <div class="card-hd"><div class="card-title" id="tourSettingsTitle">Tournament Settings</div></div>
       <div class="card-bd">
         <div class="ig"><label>Timer (seconds)</label><input type="number" id="setTimer" value="30"></div>
-        <div class="ig"><label>Default Base Price (BDT)</label><input type="number" id="setBase" value="5000"></div>
-        <div class="ig"><label>Default Budget (BDT)</label><input type="number" id="setBudget" value="500000"></div>
+        <div class="ig"><label>Default Base Price (₹)</label><input type="number" id="setBase" value="5000"></div>
+        <div class="ig"><label>Default Budget (₹)</label><input type="number" id="setBudget" value="500000"></div>
         <button class="btn bs" onclick="saveTourSettings()">Save Settings</button>
       </div>
     </div>
@@ -504,7 +504,7 @@ function renderTournaments(){
         '<div style="width:42px;height:42px;border-radius:10px;background:'+t.color+'22;border:1px solid '+t.color+'44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">'+(t.icon||'🏏')+'</div>'+
         '<div style="flex:1">'+
           '<div style="font-size:15px;font-weight:700;color:#ddd">'+t.name+'</div>'+
-          '<div style="font-size:10px;color:#555;margin-top:2px">'+t.code+' · fmt(t.defaultBudget)+' · '+t.timerDuration+'s</div>'+
+          '<div style="font-size:10px;color:#555;margin-top:2px">'+t.code+' · ₹'+fmt(t.defaultBudget)+' · '+t.timerDuration+'s</div>'+
         '</div>'+
         (isActive?'<div style="font-size:10px;font-weight:700;color:var(--p);background:rgba(0,229,255,.1);padding:3px 8px;border-radius:20px;border:1px solid rgba(0,229,255,.2)">ACTIVE</div>':'')+
       '</div>'+
@@ -750,7 +750,7 @@ async function openCopyModal(){
       (p.img?'<img src="'+p.img+'" style="width:32px;height:32px;border-radius:7px;object-fit:cover">':
         '<div style="width:32px;height:32px;border-radius:7px;background:var(--c3);display:flex;align-items:center;justify-content:center;font-size:14px">👤</div>')+
       '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#ddd">'+p.name+'</div>'+
-      '<div style="font-size:10px;color:#555">'+(p.role||'bat').toUpperCase()+' · fmt(p.basePrice)+'</div></div>'+
+      '<div style="font-size:10px;color:#555">'+(p.role||'bat').toUpperCase()+' ·'+fmt(p.basePrice)+'</div></div>'+
     '</div>'
   ).join('');
   document.getElementById('copyModal').classList.add('show');
@@ -834,7 +834,7 @@ function renderTeams(){
         '</div>'+
         '<div style="text-align:right">'+
           '<div style="font-family:Orbitron,monospace;font-size:17px;color:var(--g)">fmt(t.currentBudget)+'</div>'+
-          '<div style="font-size:10px;color:#444">/ fmt(t.initialBudget)+'</div>'+
+          '<div style="font-size:10px;color:#444">/'+fmt(t.initialBudget)+'</div>'+
         '</div>'+
       '</div>'+
       '<div style="background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.15);border-radius:9px;padding:9px 12px;margin-bottom:10px">'+
@@ -902,7 +902,7 @@ async function clearData(){
 // ══════════════════════════════
 // UTILS
 // ══════════════════════════════
-function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
+function'+fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
 function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');

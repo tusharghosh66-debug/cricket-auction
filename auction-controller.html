@@ -433,23 +433,23 @@ async function doSelectPlayer(pid){
 function addInc(a){
   const p=S.players[S.auction.currentPlayerId];if(!p)return;
   selBid=(S.auction.currentBid||p.basePrice)+a;
-  document.getElementById('bidAmountEl').textContent='BDT '+fmt(selBid);
+  document.getElementById('bidAmountEl').textContent=fmt(selBid);
 }
 function resetBid(){
   const p=S.players[S.auction.currentPlayerId];if(!p)return;
   selBid=S.auction.currentBid||p.basePrice;
-  document.getElementById('bidAmountEl').textContent='BDT '+fmt(selBid);
+  document.getElementById('bidAmountEl').textContent=fmt(selBid);
 }
 
 async function placeBid(){
   if(!selTeam){toast('Select a team!');return;}
   const t=S.teams[selTeam];
   if(selBid<=(S.auction.currentBid||0)){toast('Bid must be higher!');return;}
-  if(selBid>t.currentBudget){toast(t.name+' budget: BDT '+fmt(t.currentBudget));return;}
+  if(selBid>t.currentBudget){toast(t.name+' budget: fmt(t.currentBudget));return;}
   const dur=S.settings.timerDuration||30;
   await fb.patch('auction',{currentBid:selBid,currentBidder:selTeam,currentBidderName:t.name,timer:dur,status:'active'});
   startLocalTimer();
-  toast(t.name+' bids BDT '+fmt(selBid));
+  toast(t.name+' bids fmt(selBid));
 }
 
 async function soldPlayer(){
@@ -534,8 +534,8 @@ function renderAuction(){
 
   document.getElementById('heroName').textContent=p.name;
   document.getElementById('heroStats').textContent=p.stats||'';
-  document.getElementById('heroBase').textContent='BDT '+fmt(p.basePrice);
-  document.getElementById('heroBid').textContent='BDT '+fmt(currentBid||p.basePrice);
+  document.getElementById('heroBase').textContent=fmt(p.basePrice);
+  document.getElementById('heroBid').textContent=fmt(currentBid||p.basePrice);
   document.getElementById('heroBidder').textContent=currentBidderName?'🔥 '+currentBidderName:'No bids yet';
 
   const t=timer||0,tot=timerDuration||30;
@@ -544,7 +544,7 @@ function renderAuction(){
   document.getElementById('timerBar').className='timer-bar-fill'+(t<=5?' urgent':'');
 
   if(!selBid||selBid<(currentBid||p.basePrice))selBid=currentBid||p.basePrice;
-  document.getElementById('bidAmountEl').textContent='BDT '+fmt(selBid);
+  document.getElementById('bidAmountEl').textContent=fmt(selBid);
 }
 
 function updateStatsBar(){
@@ -564,7 +564,7 @@ function renderTeamBidGrid(){
     return`<div class="team-btn ${selTeam===id?'sel':''} ${noBudget?'no-budget':''}" onclick="selBidTeam('${id}')" style="${selTeam===id?'border-color:'+(t.color||'#00e5ff'):''}">
       <div class="chk">✓</div>
       <div class="tn">${t.name}</div>
-      <div class="tb">BDT ${fmt(t.currentBudget)}</div>
+      <div class="tb">${fmt(t.currentBudget)}</div>
       <div class="tp">${(t.players||[]).length} players${noBudget?' · LOW BUDGET':''}</div>
     </div>`;
   }).join('');
@@ -598,7 +598,7 @@ function renderPickList(){
         <div class="pick-name">${p.name}${id===isCur?' 🎯':''}</div>
         <div class="pick-meta">${roleLabel[p.role]||'BAT'} · ${p.stats||''} · ${p.status||'available'}${p.soldToName?' → '+p.soldToName:''}</div>
       </div>
-      <div class="pick-price">BDT ${fmt(p.basePrice)}</div>
+      <div class="pick-price">${fmt(p.basePrice)}</div>
     </div>`).join('');
 }
 
@@ -614,16 +614,16 @@ function renderCtrlTeams(){
           <div style="font-size:10px;color:#555;margin-top:2px">Manager: ${t.manager||'-'} · ${(t.players||[]).length} players</div>
         </div>
         <div style="text-align:right">
-          <div style="font-family:'Orbitron',monospace;font-size:16px;color:var(--g)">BDT ${fmt(t.currentBudget)}</div>
-          <div style="font-size:10px;color:#444">/ BDT ${fmt(t.initialBudget)}</div>
+          <div style="font-family:'Orbitron',monospace;font-size:16px;color:var(--g)">${fmt(t.currentBudget)}</div>
+          <div style="font-size:10px;color:#444">/ ${fmt(t.initialBudget)}</div>
         </div>
       </div>
       ${(t.players||[]).length>0?`<div style="font-size:10px;color:#444;line-height:1.8">`+
-        (t.players||[]).map(pid=>{const pl=S.players[pid];return pl?`• ${pl.name} <span style="color:var(--g)">BDT ${fmt(pl.soldPrice)}</span>`:''}).filter(Boolean).join('  ')+'</div>':''}
+        (t.players||[]).map(pid=>{const pl=S.players[pid];return pl?`• ${pl.name} <span style="color:var(--g)">${fmt(pl.soldPrice)}</span>`:''}).filter(Boolean).join('  ')+'</div>':''}
     </div>`).join('')+'</div>';
 }
 
-function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'BDT '+(n/100000).toFixed(1)+'L';if(n>=1000)return'BDT '+(n/1000).toFixed(n%1000===0?0:1)+'K';return'BDT '+n;}
+function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 function switchPage(nm,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));

@@ -339,7 +339,7 @@ function handle(prev,cur){
     show('sold');
     document.getElementById('sPnm').textContent=(lastSoldPlayer||'').toUpperCase();
     document.getElementById('sTnm').textContent=(lastSoldTeam||'').toUpperCase();
-    document.getElementById('sPr').textContent='BDT '+fmt(lastSoldPrice);
+    document.getElementById('sPr').textContent=fmt(lastSoldPrice);
     clearTimeout(soldTO);
     soldTO=setTimeout(()=>{hide('sold');show('idle');},5000);
     return;
@@ -411,7 +411,7 @@ function handle(prev,cur){
   let tk='🏏 AUCTION LIVE';
   if(status==='paused') tk='⏸ PAUSED';
   else if(status==='ended') tk=currentBidderName?'🔨 FINAL — '+currentBidderName.toUpperCase():'❌ NO BIDS';
-  else if(currentBidderName) tk='💰 <span class="hi">'+currentBidderName.toUpperCase()+'</span> leads @ BDT '+fmt(currentBid);
+  else if(currentBidderName) tk='💰 <span class="hi">'+currentBidderName.toUpperCase()+'</span> leads @ fmt(currentBid);
   document.getElementById('tickerTxt').innerHTML=tk;
 
   renderTeams(currentBidder);
@@ -438,12 +438,12 @@ function updateIntroCard(p,cur,isReAuction){
 
   document.getElementById('icName').textContent=(p.name||'').toUpperCase();
   document.getElementById('icStats').textContent=p.stats||'';
-  document.getElementById('icBase').textContent='BDT '+fmt(p.basePrice);
+  document.getElementById('icBase').textContent=fmt(p.basePrice);
 
   const bid=currentBid||p.basePrice;
   const be=document.getElementById('icBid');
   if(bid!==prevBid){be.classList.remove('pop');void be.offsetWidth;be.classList.add('pop');}
-  be.textContent='BDT '+fmt(bid);
+  be.textContent=fmt(bid);
   document.getElementById('icBidder').textContent=currentBidderName?'🔥 '+currentBidderName:'Waiting for bids...';
   prevBid=bid;
 }
@@ -466,10 +466,10 @@ function updateCompactCard(p,cur){
   document.getElementById('ccBadges').innerHTML=b;
 
   document.getElementById('ccName').textContent=p.name||'';
-  document.getElementById('ccBase').textContent='Base: BDT '+fmt(p.basePrice);
+  document.getElementById('ccBase').textContent='Base: fmt(p.basePrice);
 
   const ce=document.getElementById('ccBid');
-  ce.textContent='BDT '+fmt(bid);
+  ce.textContent=fmt(bid);
   document.getElementById('ccBidder').textContent=currentBidderName?'🔥 '+currentBidderName:'No bids yet';
 
   // Timer strip
@@ -492,7 +492,7 @@ function renderTeams(leadId){
           '<div style="font-size:10px;color:#1a1a1a;margin-top:1px">'+(t.players||[]).length+' players</div>'+
         '</div>'+
       '</div>'+
-      '<div class="tb">BDT '+fmt(t.currentBudget)+'</div>'+
+      '<div class="tb">fmt(t.currentBudget)+'</div>'+
     '</div>'
   ).join('');
 }
@@ -504,12 +504,7 @@ function updStats(){
   document.getElementById('tsTotal').textContent=pl.length;
 }
 
-function fmt(n){
-  if(!n&&n!==0)return'0';
-  if(n>=100000)return'BDT '+(n/100000).toFixed(1)+'L';
-  if(n>=1000)return'BDT '+(n/1000).toFixed(n%1000===0?0:1)+'K';
-  return'BDT '+n;
-}
+function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
 
 // Start
 setTimeout(()=>show('idle'),400);

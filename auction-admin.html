@@ -106,6 +106,22 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 .spin{width:24px;height:24px;border:3px solid rgba(0,229,255,.1);border-top-color:var(--p);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 8px;}
 @keyframes sp{to{transform:rotate(360deg)}}
 </style>
+<script>
+const ADMIN_PASS='Tus@900#';
+function doUnlock(){
+  const val=document.getElementById('lockInput').value;
+  if(val===ADMIN_PASS){
+    document.getElementById('lockScreen').style.display='none';
+    sessionStorage.setItem('au','1');
+  }else{
+    const e=document.getElementById('lockErr');
+    e.textContent='❌ Wrong password!';
+    document.getElementById('lockInput').value='';
+    document.getElementById('lockInput').focus();
+    setTimeout(()=>{e.textContent='';},2500);
+  }
+}
+</script>
 </head>
 <body>
 
@@ -337,25 +353,11 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 
 
 <script>
-// ══ PASSWORD ══
-const ADMIN_PASS = 'Tus@900#';
-function doUnlock(){
-  const val = document.getElementById('lockInput').value;
-  if(val === ADMIN_PASS){
-    document.getElementById('lockScreen').style.display = 'none';
-    sessionStorage.setItem('au','1');
-  } else {
-    const e = document.getElementById('lockErr');
-    e.textContent = '❌ Wrong password!';
-    document.getElementById('lockInput').value = '';
-    document.getElementById('lockInput').focus();
-    setTimeout(()=>{ e.textContent=''; }, 2500);
-  }
-}
+// ══ SESSION CHECK ══
 if(sessionStorage.getItem('au')==='1'){
   document.getElementById('lockScreen').style.display='none';
 } else {
-  setTimeout(()=>document.getElementById('lockInput').focus(), 100);
+  setTimeout(()=>document.getElementById('lockInput').focus(),100);
 }
 
 // ══════════════════════════════

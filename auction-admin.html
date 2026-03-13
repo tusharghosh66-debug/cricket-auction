@@ -41,14 +41,12 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 .bs{background:linear-gradient(135deg,#00c853,#007b33);color:#fff;}
 .bd{background:linear-gradient(135deg,#ff3366,#c0002b);color:#fff;}
 .bor{background:linear-gradient(135deg,#ff6b35,#c04a00);color:#fff;}
-.bgold{background:linear-gradient(135deg,#ffd700,#e6a800);color:#000;}
 .bgr{background:var(--c2);color:#666;border:1px solid var(--b);}
 .bo{background:transparent;border:1px solid var(--b);color:#777;}
 .bsm{padding:8px 10px;font-size:12px;border-radius:8px;}
 .b2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .b3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
 .sec{padding:14px 14px 8px;font-size:10px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;justify-content:space-between;}
-.badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
 .b-bat{background:rgba(0,255,136,.12);color:var(--gn);}
 .b-bowl{background:rgba(255,51,102,.12);color:var(--r);}
 .b-all{background:rgba(255,215,0,.12);color:var(--g);}
@@ -66,6 +64,7 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 .p-name{font-size:14px;font-weight:700;color:#ddd;margin-bottom:2px;}
 .p-meta{font-size:10px;color:#555;}
 .p-badges{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;}
+.badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
 .p-price{font-family:'Orbitron',monospace;font-size:13px;color:var(--g);font-weight:700;flex-shrink:0;}
 .p-card-actions{display:flex;gap:6px;padding:0 12px 10px;}
 .img-up{border:2px dashed rgba(255,255,255,.1);border-radius:10px;padding:16px;text-align:center;cursor:pointer;position:relative;transition:border-color .2s;}
@@ -86,9 +85,6 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 .empty-icon{font-size:40px;margin-bottom:10px;display:block;}
 .spin{width:24px;height:24px;border:3px solid rgba(0,229,255,.1);border-top-color:var(--p);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 8px;}
 @keyframes sp{to{transform:rotate(360deg)}}
-/* Tournament card expand */
-.tour-players-btn{display:block;width:100%;margin-top:8px;padding:10px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.15);border-radius:9px;color:var(--p);font-size:12px;font-weight:700;cursor:pointer;text-align:center;letter-spacing:.5px;}
-.tour-players-btn:active{background:rgba(0,229,255,.12);}
 </style>
 <script>
 const ADMIN_PASS='Tus@900#';
@@ -159,10 +155,18 @@ function doUnlock(){
   <div class="card" id="newTourCard" style="display:none">
     <div class="card-hd"><div class="card-title">New Tournament</div><button class="btn bgr bsm" style="width:auto;padding:5px 10px" onclick="toggleCard('newTourCard')">✕</button></div>
     <div class="card-bd">
+      <div class="ig">
+        <label>Tournament Logo</label>
+        <div class="img-up" id="tLogoBox">
+          <input type="file" accept="image/*" id="tLogoFile" onchange="uploadTourLogo(this)">
+          <div id="tLogoPrev"><div style="font-size:28px;margin-bottom:4px">🏆</div><div style="font-size:11px;color:#555">Tap to upload logo</div></div>
+        </div>
+        <input type="hidden" id="tLogoImg">
+      </div>
       <div class="ig"><label>Tournament Name</label><input type="text" id="tName" placeholder="e.g. DPL Summer 2025"></div>
       <div class="ig"><label>Short Code</label><input type="text" id="tCode" placeholder="e.g. DPL25" maxlength="8"></div>
       <div class="b2" style="margin-bottom:11px">
-        <div class="ig" style="margin:0"><label>Icon</label><input type="text" id="tIcon" placeholder="🏏" maxlength="4"></div>
+        <div class="ig" style="margin:0"><label>Emoji (fallback)</label><input type="text" id="tIcon" placeholder="🏏" maxlength="4"></div>
         <div class="ig" style="margin:0"><label>Color</label><input type="color" id="tColor" value="#00e5ff"></div>
       </div>
       <div class="ig"><label>Budget per Team (₹)</label><input type="number" id="tBudget" value="500000"></div>
@@ -216,10 +220,9 @@ function doUnlock(){
 
 <!-- ═══ PLAYERS PAGE ═══ -->
 <div class="page" id="pg1">
-  <!-- Tournament context header -->
   <div style="background:linear-gradient(135deg,#0d1b2a,#1a2744);border-bottom:1px solid var(--b);padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
     <div>
-      <div style="font-size:11px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Managing Players For</div>
+      <div style="font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Managing Players For</div>
       <div style="font-size:16px;font-weight:700;color:#ddd" id="pTourName">—</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
@@ -227,13 +230,11 @@ function doUnlock(){
       <button class="btn bgr bsm" style="width:auto;padding:5px 12px" onclick="goTab(0)">← Back</button>
     </div>
   </div>
-
   <div style="display:flex;gap:8px;padding:12px 14px 4px">
     <button class="btn bp bsm" style="flex:1" onclick="toggleCard('newPlayerCard')">+ Add Player</button>
     <button class="btn bor bsm" style="flex:1" onclick="openCopyModal()">📋 Copy Players</button>
   </div>
-
-  <div class="card" id="newPlayerCard" style="display:none;margin-top:8px">
+  <div class="card" id="newPlayerCard" style="display:none;margin-top:4px">
     <div class="card-hd"><div class="card-title">Add Player</div><button class="btn bgr bsm" style="width:auto;padding:5px 10px" onclick="toggleCard('newPlayerCard')">✕</button></div>
     <div class="card-bd">
       <div class="ig">
@@ -261,9 +262,8 @@ function doUnlock(){
       </div>
     </div>
   </div>
-
   <div class="srch" style="margin-top:8px"><span style="color:#444">🔍</span><input type="text" id="pSearch" placeholder="Search players..." oninput="renderPlayers()"></div>
-  <div class="frow" id="pFilters">
+  <div class="frow">
     <div class="fp on" onclick="setPF('all',this)">All</div>
     <div class="fp" onclick="setPF('available',this)">Available</div>
     <div class="fp" onclick="setPF('sold',this)">Sold</div>
@@ -277,10 +277,7 @@ function doUnlock(){
 
 <!-- ═══ TEAMS PAGE ═══ -->
 <div class="page" id="pg2">
-  <div class="sec">
-    <span>Teams</span>
-    <button class="btn bp bsm" style="width:auto;padding:5px 12px" onclick="toggleCard('newTeamCard')">+ Add</button>
-  </div>
+  <div class="sec"><span>Teams</span><button class="btn bp bsm" style="width:auto;padding:5px 12px" onclick="toggleCard('newTeamCard')">+ Add</button></div>
   <div class="card" id="newTeamCard" style="display:none">
     <div class="card-hd"><div class="card-title">Add Team</div><button class="btn bgr bsm" style="width:auto;padding:5px 10px" onclick="toggleCard('newTeamCard')">✕</button></div>
     <div class="card-bd">
@@ -307,9 +304,9 @@ function doUnlock(){
     <div class="card">
       <div class="card-hd"><div class="card-title">imgbb API Key</div></div>
       <div class="card-bd">
-        <div class="ig"><label>API Key</label><input type="text" id="imgbbKey" placeholder="Get free key at imgbb.com/api"></div>
-        <button class="btn bs" onclick="saveImgbb()">Save Key</button>
-        <div style="font-size:10px;color:#444;margin-top:8px">imgbb.com → Sign up free → API → Generate key</div>
+        <div style="background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.2);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--gn);margin-bottom:10px;">✓ API Key is set in app</div>
+        <div class="ig"><label>Update Key (optional)</label><input type="text" id="imgbbKeyInput" placeholder="Enter new imgbb key to update"></div>
+        <button class="btn bs" onclick="saveImgbb()">Update Key</button>
       </div>
     </div>
     <div class="card" style="margin-top:12px">
@@ -360,7 +357,7 @@ const fb = {
 // ══════════════════════════════
 let tournaments={}, players={}, teams={}, settings={timerDuration:30,defaultBasePrice:5000,defaultBudget:500000};
 let activeTourId = localStorage.getItem('activeTourId') || null;
-let imgbbKey = localStorage.getItem('imgbb_key') || '';
+let imgbbKey = '615ca8c13623ea0a2351cc3ff29e6d4e';
 let pFilter = 'all';
 let copySourceId = null, copySelected = new Set();
 let auctionTimerInt = null;
@@ -435,6 +432,7 @@ async function addTournament(){
   const tour = {
     name:nm, code,
     icon: document.getElementById('tIcon').value||'🏏',
+    logo: document.getElementById('tLogoImg').value||'',
     color: document.getElementById('tColor').value,
     defaultBudget: parseInt(document.getElementById('tBudget').value)||500000,
     defaultBasePrice: parseInt(document.getElementById('tBasePrice').value)||5000,
@@ -446,6 +444,9 @@ async function addTournament(){
     await fb.set('tours/'+r.name+'/settings',{timerDuration:tour.timerDuration,defaultBasePrice:tour.defaultBasePrice,defaultBudget:tour.defaultBudget,tournamentName:nm});
     toast(nm+' created!');
     toggleCard('newTourCard');
+    // Reset logo form
+    document.getElementById('tLogoImg').value='';
+    document.getElementById('tLogoPrev').innerHTML='<div style="font-size:28px;margin-bottom:4px">🏆</div><div style="font-size:11px;color:#555">Tap to upload logo</div>';
     activateTournament(r.name);
   }
 }
@@ -490,7 +491,7 @@ function renderTournaments(){
     const isActive = id===activeTourId;
     return '<div style="background:var(--c);border:1px solid '+(isActive?'rgba(0,229,255,.3)':'var(--b)')+';border-radius:14px;padding:14px;margin-bottom:8px">'+
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">'+
-        '<div style="width:42px;height:42px;border-radius:10px;background:'+t.color+'22;border:1px solid '+t.color+'44;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">'+(t.icon||'🏏')+'</div>'+
+        '<div style="width:46px;height:46px;border-radius:10px;background:'+t.color+'22;border:1px solid '+t.color+'44;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden">'+(t.logo?'<img src="'+t.logo+'" style="width:46px;height:46px;object-fit:cover">':( t.icon||'🏏'))+'</div>'+
         '<div style="flex:1">'+
           '<div style="font-size:15px;font-weight:700;color:#ddd">'+t.name+'</div>'+
           '<div style="font-size:10px;color:#555;margin-top:2px">'+t.code+' · ₹'+fmt(t.defaultBudget)+' · '+t.timerDuration+'s</div>'+
@@ -631,6 +632,49 @@ async function uploadImg(input){
   }catch{
     document.getElementById('imgPrev').innerHTML='<div style="font-size:28px">📷</div><div style="font-size:11px;color:#555">Tap to upload</div>';
     toast('Upload error!');
+  }
+}
+
+
+// ══════════════════════════════
+// IMAGE UPLOAD
+// ══════════════════════════════
+async function imgbbUpload(file){
+  const key = imgbbKey;
+  if(!key){toast('imgbb key missing!');return null;}
+  const fd=new FormData(); fd.append('image',file);
+  try{
+    const r=await fetch('https://api.imgbb.com/1/upload?key='+key,{method:'POST',body:fd});
+    const d=await r.json();
+    return d.success ? d.data.url : null;
+  }catch{return null;}
+}
+
+async function uploadImg(input){
+  const file=input.files[0]; if(!file)return;
+  document.getElementById('imgPrev').innerHTML='<div class="spin"></div><div style="font-size:11px;color:#555">Uploading...</div>';
+  const url = await imgbbUpload(file);
+  if(url){
+    document.getElementById('npImg').value=url;
+    document.getElementById('imgPrev').innerHTML='<img src="'+url+'"><div style="font-size:11px;color:var(--gn)">✓ Uploaded</div>';
+    toast('Photo uploaded!');
+  }else{
+    document.getElementById('imgPrev').innerHTML='<div style="font-size:28px">📷</div><div style="font-size:11px;color:#555">Tap to upload</div>';
+    toast('Upload failed!');
+  }
+}
+
+async function uploadTourLogo(input){
+  const file=input.files[0]; if(!file)return;
+  document.getElementById('tLogoPrev').innerHTML='<div class="spin"></div><div style="font-size:11px;color:#555">Uploading...</div>';
+  const url = await imgbbUpload(file);
+  if(url){
+    document.getElementById('tLogoImg').value=url;
+    document.getElementById('tLogoPrev').innerHTML='<img src="'+url+'" style="width:60px;height:60px;border-radius:10px;object-fit:cover;margin:0 auto 6px;display:block"><div style="font-size:11px;color:var(--gn)">✓ Logo uploaded</div>';
+    toast('Logo uploaded!');
+  }else{
+    document.getElementById('tLogoPrev').innerHTML='<div style="font-size:28px;margin-bottom:4px">🏆</div><div style="font-size:11px;color:#555">Tap to upload logo</div>';
+    toast('Upload failed!');
   }
 }
 

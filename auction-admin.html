@@ -367,7 +367,7 @@ let playerTourId = null; // which tournament's players we're viewing
 // INIT
 // ══════════════════════════════
 (async function init(){
-  if(imgbbKey) document.getElementById('imgbbKey').value = imgbbKey;
+  // imgbb key is hardcoded, no need to set input
   setConn(true);
 
   // Poll tournaments
@@ -419,7 +419,10 @@ function setConn(ok){
 
 function updatePill(){
   const t = tournaments[activeTourId];
-  if(t) document.getElementById('activePill').textContent = (t.icon||'🏏')+' '+t.code;
+  if(t){
+    document.getElementById('activePill').textContent = (t.icon||'🏏')+' '+t.code;
+    document.getElementById('auctionPanel').style.display='block';
+  }
 }
 
 // ══════════════════════════════
@@ -485,6 +488,19 @@ async function deleteTournament(id){
 function renderTournaments(){
   const el = document.getElementById('tourList');
   const entries = Object.entries(tournaments).sort((a,b)=>b[1].createdAt-a[1].createdAt);
+
+  // Verify activeTourId still exists, if not clear it
+  if(activeTourId && !tournaments[activeTourId]){
+    activeTourId=null;
+    localStorage.removeItem('activeTourId');
+    document.getElementById('activePill').textContent='No Tournament';
+    document.getElementById('auctionPanel').style.display='none';
+  }
+  // Show panel only if active tournament exists
+  if(activeTourId && tournaments[activeTourId]){
+    document.getElementById('auctionPanel').style.display='block';
+  }
+
   if(!entries.length){el.innerHTML='<div class="empty"><span class="empty-icon">🏆</span>No tournaments yet.</div>';return;}
 
   el.innerHTML = '<div style="padding:0 14px 14px">'+entries.map(([id,t])=>{
@@ -926,8 +942,9 @@ async function saveTourSettings(){
   toast('Settings saved!');
 }
 function saveImgbb(){
-  const k=document.getElementById('imgbbKey').value.trim();
-  imgbbKey=k;localStorage.setItem('imgbb_key',k);toast('imgbb key saved!');
+  const k=document.getElementById('imgbbKeyInput').value.trim();
+  if(k){imgbbKey=k;localStorage.setItem('imgbb_key',k);toast('Key updated!');}
+  else toast('Enter a key first!');
 }
 async function resetPlayers(){
   if(!activeTourId)return;
@@ -965,13 +982,11 @@ function toggleCard(id){
   el.style.display=el.style.display==='none'||!el.style.display?'block':'none';
 }
 
-// Init — show panel if tournament already selected
-if(activeTourId){
-  document.getElementById('auctionPanel').style.display='block';
-  const base=window.location.href.substring(0,window.location.href.lastIndexOf('/')+1);
-  document.getElementById('ctrlLink').href=base+'auction-controller.html';
-  document.getElementById('obsLink').href=base+'auction-obs.html';
-}
+// Init — set quick links
+const _base=window.location.href.substring(0,window.location.href.lastIndexOf('/')+1);
+document.getElementById('ctrlLink').href=_base+'auction-controller.html';
+document.getElementById('obsLink').href=_base+'auction-obs.html';
+// Panel only shows after tournaments load and activeTourId is verified
 
 </script>
 </body>

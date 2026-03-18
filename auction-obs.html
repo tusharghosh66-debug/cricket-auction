@@ -63,7 +63,7 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;font-fami
 .ic-prices{display:grid;grid-template-columns:1fr 1.4fr;gap:14px;}
 .pbox{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px 18px;}
 .bidbox{background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.2);border-radius:12px;padding:14px 20px;text-align:right;}
-.plbl{font-size:10px;font-weight:700;letter-spacing:2px;color:#333;text-transform:uppercase;margin-bottom:4px;}
+.plbl{font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.45);text-transform:uppercase;margin-bottom:4px;}
 .bval{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:#666;}
 .bidval{font-family:'Orbitron',monospace;font-size:52px;font-weight:900;color:#ffd700;line-height:1;text-shadow:0 0 30px rgba(255,215,0,.4);transition:all .3s;}
 .bidval.pop{animation:bp .4s ease-out;}
@@ -75,70 +75,122 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;font-fami
 .cdown-fill{height:100%;background:linear-gradient(90deg,var(--p,#00e5ff),#ffd700);border-radius:2px;width:100%;transition:width linear;}
 
 /* ═══════════════════════════════════════
-   COMPACT CARD — bottom-left, transparent bg
+   IPL-STYLE BOTTOM BAR
 ═══════════════════════════════════════ */
 #compactCard{
   position:absolute;
-  left:40px;
-  bottom:90px;
-  width:440px;
+  bottom:0; left:0; right:0;
+  height:130px;
   opacity:0;
   pointer-events:none;
-  transition:opacity .6s, transform .6s;
-  transform:translateX(-30px);
+  transition:opacity .5s;
 }
-#compactCard.v{opacity:1;transform:translateX(0);}
+#compactCard.v{opacity:1;}
 
-.cc-inner{
-  background:linear-gradient(135deg,rgba(5,10,22,.92),rgba(3,7,16,.95));
-  border:1px solid rgba(0,229,255,.18);
-  border-radius:18px;
-  padding:16px 18px;
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  box-shadow:0 8px 40px rgba(0,0,0,.5),0 0 40px rgba(0,229,255,.04);
-  display:flex;gap:14px;align-items:center;
-  position:relative;overflow:hidden;
+/* Bottom gradient bg */
+.cc-bg{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,transparent,rgba(2,5,15,.97) 40%,rgba(2,5,15,1));
 }
-.cc-inner::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.4),transparent);}
 
-.cc-photo{width:64px;height:64px;border-radius:12px;object-fit:cover;border:1px solid rgba(255,255,255,.07);flex-shrink:0;background:rgba(255,255,255,.03);}
-.cc-photo-ph{width:64px;height:64px;border-radius:12px;flex-shrink:0;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:26px;}
-.cc-info{flex:1;min-width:0;}
-.cc-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;}
-.cbadge{font-size:8px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:20px;text-transform:uppercase;}
-.cc-name{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:#fff;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cc-right{text-align:right;flex-shrink:0;}
-.cc-bid{font-family:'Orbitron',monospace;font-size:26px;font-weight:900;color:#ffd700;line-height:1;text-shadow:0 0 20px rgba(255,215,0,.3);}
-.cc-bid.pop{animation:bp .4s ease-out;}
-.cc-bidder{font-size:11px;color:#00e5ff;font-weight:700;margin-top:3px;max-width:120px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.cc-base{font-size:10px;color:#333;font-weight:600;margin-top:1px;}
+/* Player photo - rises above the bar */
+#ccPhotoWrap{
+  position:absolute;
+  bottom:10px;
+  left:220px;
+  width:160px;
+  height:200px;
+  z-index:10;
+}
+#ccPhotoWrap img{
+  width:100%;height:100%;
+  object-fit:cover;
+  object-position:top;
+  filter:drop-shadow(0 0 20px rgba(0,229,255,.4));
+}
+#ccPhotoWrap .cc-photo-ph{
+  width:160px;height:160px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:60px;
+}
 
-/* Timer strip at bottom of compact card */
-.cc-timer-strip{height:3px;background:rgba(255,255,255,.05);border-radius:0 0 18px 18px;overflow:hidden;margin:-1px -1px 0;}
-.cc-timer-fill{height:100%;background:linear-gradient(90deg,#00e5ff,#ffd700);border-radius:0 0 18px 18px;transition:width .95s linear;}
-.cc-timer-fill.urg{background:#ff3366;}
+/* Left section — team info */
+.cc-left{
+  position:absolute;
+  left:40px; bottom:22px;
+  display:flex;align-items:center;gap:16px;
+  z-index:5;
+}
+.cc-team-logo{width:52px;height:52px;border-radius:10px;object-fit:cover;border:2px solid rgba(255,255,255,.15);}
+.cc-team-logo-ph{width:52px;height:52px;border-radius:10px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:24px;border:2px solid rgba(255,255,255,.1);}
+.cc-team-info{}
+.cc-player-name{font-family:'Bebas Neue',cursive;font-size:44px;color:#fff;letter-spacing:3px;line-height:1;text-shadow:0 2px 20px rgba(0,0,0,.8);}
+.cc-team-name{font-size:16px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:1px;margin-top:2px;}
+
+/* Right section — bid price */
+.cc-right{
+  position:absolute;
+  right:40px; bottom:22px;
+  text-align:right;
+  z-index:5;
+}
+.cc-price-label{font-size:13px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.cc-bid{font-family:'Orbitron',monospace;font-size:52px;font-weight:900;color:#ffd700;line-height:1;text-shadow:0 0 30px rgba(255,215,0,.5);}
+.cc-bid.pop{animation:bp .35s ease-out;}
+.cc-bidder{font-size:16px;font-weight:700;color:#00e5ff;margin-top:4px;letter-spacing:1px;}
+.cc-base{font-size:12px;color:rgba(255,255,255,.35);margin-top:2px;}
+
+/* Badges row */
+.cc-badges-row{
+  position:absolute;
+  left:40px; bottom:88px;
+  display:flex;gap:6px;
+  z-index:5;
+}
+.cbadge{font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:20px;text-transform:uppercase;}
+
+/* Divider line */
+.cc-divider{
+  position:absolute;
+  left:0;right:0;bottom:128px;
+  height:2px;
+  background:linear-gradient(90deg,transparent,rgba(0,229,255,.5),rgba(255,215,0,.5),transparent);
+}
+
+/* Timer bar at very bottom */
+.cc-timer-strip{position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(255,255,255,.05);overflow:hidden;}
+.cc-timer-fill{height:100%;background:linear-gradient(90deg,#00e5ff,#ffd700);transition:width .95s linear;}
+.cc-timer-fill.urg{background:linear-gradient(90deg,#ff3366,#ff6b35);}
 
 /* ═══ TEAMS PANEL (right side, compact) ═══ */
 #teamPanel{
   position:absolute;
   right:40px;
-  top:50%;
-  transform:translateY(-50%);
-  width:260px;
+  top:80px;
+  bottom:150px;
+  width:320px;
   opacity:0;
   pointer-events:none;
   transition:opacity .5s;
+  overflow-y:auto;
 }
 #teamPanel.v{opacity:1;}
-.tp-title{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:3px;color:#222;text-transform:uppercase;margin-bottom:6px;padding:0 2px;}
-.trow{background:rgba(5,10,22,.88);border:1px solid rgba(255,255,255,.04);border-radius:11px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;transition:all .4s;position:relative;overflow:hidden;backdrop-filter:blur(8px);}
-.trow.lead{border-color:#ffd700;background:rgba(255,215,0,.07);box-shadow:0 0 20px rgba(255,215,0,.06);}
-.trow-left{display:flex;align-items:center;gap:8px;}
-.tstrip{width:3px;height:32px;border-radius:2px;flex-shrink:0;}
-.trow .tn{font-size:13px;font-weight:700;color:#666;}.trow.lead .tn{color:#fff;}
-.trow .tb{font-family:'Orbitron',monospace;font-size:12px;color:#222;}.trow.lead .tb{color:#ffd700;}
-.lbdg{position:absolute;top:0;right:0;background:#ffd700;color:#000;font-size:8px;font-weight:900;letter-spacing:1px;padding:2px 7px;border-radius:0 11px 0 7px;}
+.tp-title{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-bottom:8px;padding:0 2px;}
+.trow{background:rgba(4,8,20,.92);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;transition:all .4s;position:relative;overflow:hidden;backdrop-filter:blur(16px);}
+.trow.lead{border-color:rgba(255,215,0,.6);background:rgba(255,215,0,.1);box-shadow:0 0 24px rgba(255,215,0,.15),inset 0 0 20px rgba(255,215,0,.04);}
+.trow-left{display:flex;align-items:center;gap:10px;}
+.tstrip{width:4px;height:38px;border-radius:3px;flex-shrink:0;}
+.trow .tn{font-size:15px;font-weight:700;color:rgba(255,255,255,.7);line-height:1.2;}
+.trow.lead .tn{color:#fff;text-shadow:0 0 12px rgba(255,255,255,.3);}
+.trow .tpc{font-size:10px;color:rgba(255,255,255,.35);margin-top:2px;letter-spacing:.5px;}
+.trow.lead .tpc{color:rgba(255,215,0,.6);}
+.trow-right{text-align:right;}
+.trow .tb{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:rgba(255,255,255,.5);}
+.trow.lead .tb{color:#ffd700;text-shadow:0 0 16px rgba(255,215,0,.5);}
+.trow .tbl{font-size:9px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.trow.lead .tbl{color:rgba(255,215,0,.4);}
+.lbdg{position:absolute;top:0;right:0;background:linear-gradient(135deg,#ffd700,#e6a800);color:#000;font-size:9px;font-weight:900;letter-spacing:1.5px;padding:3px 9px;border-radius:0 12px 0 8px;}
 
 /* ═══ TOP BAR ═══ */
 #topBar{
@@ -151,7 +203,7 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;font-fami
 .tb-name{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:#00e5ff;letter-spacing:3px;}
 .tb-stats{display:flex;gap:36px;}
 .tb-s .v{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#fff;}
-.tb-s .l{font-size:9px;font-weight:700;letter-spacing:2px;color:#2a2a2a;text-transform:uppercase;}
+.tb-s .l{font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.4);text-transform:uppercase;}
 
 /* ═══ SOLD ═══ */
 #sold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
@@ -174,10 +226,10 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;font-fami
 .upnm{font-family:'Bebas Neue',cursive;font-size:52px;color:#555;}
 
 /* TICKER */
-#ticker{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(0deg,rgba(4,8,18,.88),transparent);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .5s;pointer-events:none;}
+#ticker{position:absolute;bottom:134px;left:0;right:0;height:40px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .5s;pointer-events:none;}
 #ticker.v{opacity:1;}
-.ticker-txt{font-size:15px;font-weight:700;color:#2a2a2a;letter-spacing:2px;}
-.hi{color:#ffd700;}
+.ticker-txt{font-size:18px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:2px;text-shadow:0 0 20px rgba(0,229,255,.3);}
+.hi{color:#ffd700;text-shadow:0 0 15px rgba(255,215,0,.5);}
 </style>
 </head>
 <body>
@@ -226,20 +278,29 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;font-fami
   <div class="cdown-bar"><div class="cdown-fill" id="cdownFill"></div></div>
 </div>
 
-<!-- COMPACT CARD (bottom-left, persistent) -->
+<!-- IPL-STYLE BOTTOM BAR -->
 <div id="compactCard">
-  <div class="cc-inner">
-    <div id="ccImgWrap"></div>
-    <div class="cc-info">
-      <div class="cc-badges" id="ccBadges"></div>
-      <div class="cc-name" id="ccName">-</div>
-    </div>
-    <div class="cc-right">
-      <div class="cc-bid" id="ccBid">-</div>
-      <div class="cc-bidder" id="ccBidder">-</div>
-      <div class="cc-base" id="ccBase">-</div>
+  <div class="cc-bg"></div>
+  <div class="cc-divider"></div>
+  <!-- Player photo rising above bar -->
+  <div id="ccPhotoWrap"></div>
+  <!-- Badges -->
+  <div class="cc-badges-row" id="ccBadges"></div>
+  <!-- Left: player name + team -->
+  <div class="cc-left">
+    <div id="ccTeamLogoWrap"></div>
+    <div class="cc-team-info">
+      <div class="cc-player-name" id="ccName">-</div>
+      <div class="cc-team-name" id="ccBidder">-</div>
     </div>
   </div>
+  <!-- Right: bid price -->
+  <div class="cc-right">
+    <div class="cc-price-label">Current Bid</div>
+    <div class="cc-bid" id="ccBid">-</div>
+    <div class="cc-base" id="ccBase">-</div>
+  </div>
+  <!-- Timer -->
   <div class="cc-timer-strip"><div class="cc-timer-fill" id="ccTimerFill" style="width:100%"></div></div>
 </div>
 
@@ -449,50 +510,70 @@ function updateIntroCard(p,cur,isReAuction){
 }
 
 function updateCompactCard(p,cur){
-  const{currentBid,currentBidderName,timer,timerDuration}=cur;
+  const{currentBid,currentBidder,currentBidderName,timer,timerDuration}=cur;
   const bid=currentBid||p.basePrice;
 
-  // Photo
-  document.getElementById('ccImgWrap').innerHTML=p.img
-    ?'<img src="'+p.img+'" class="cc-photo" onerror="this.outerHTML=\'<div class=\\"cc-photo-ph\\">👤</div>\'">'
+  // Player photo (rises above bar)
+  document.getElementById('ccPhotoWrap').innerHTML=p.img
+    ?'<img src="'+p.img+'" onerror="this.style.display=\'none\'">'
     :'<div class="cc-photo-ph">👤</div>';
 
   // Badges
   const roleMap={bat:['BAT','rb-bat'],bowl:['BOWL','rb-bowl'],all:['ALL','rb-all'],wk:['WK','rb-wk']};
   const [rn,rc]=roleMap[p.role]||['BAT','rb-bat'];
-  let b='<span class="cbadge '+rc.replace('rb-','b-')+'">'+rn+'</span>';
-  if(p.type==='home') b+='<span class="cbadge b-home">HOME</span>';
-  if(p.type==='away') b+='<span class="cbadge b-away">AWAY</span>';
+  let b='<span class="cbadge '+rc+'">'+rn+'</span>';
+  if(p.type==='home') b+='<span class="cbadge rb-home">HOME</span>';
+  if(p.type==='away') b+='<span class="cbadge rb-away">AWAY</span>';
   document.getElementById('ccBadges').innerHTML=b;
 
-  document.getElementById('ccName').textContent=p.name||'';
-  document.getElementById('ccBase').textContent='Base:'+fmt(p.basePrice);
+  // Player name
+  document.getElementById('ccName').textContent=(p.name||'').toUpperCase();
 
+  // Team logo (bidding team)
+  const bidTeam = currentBidder ? OS.teams[currentBidder] : null;
+  const logoWrap = document.getElementById('ccTeamLogoWrap');
+  if(bidTeam && bidTeam.logo){
+    logoWrap.innerHTML='<img src="'+bidTeam.logo+'" class="cc-team-logo">';
+  } else if(bidTeam){
+    logoWrap.innerHTML='<div class="cc-team-logo-ph" style="background:'+bidTeam.color+'22;border-color:'+bidTeam.color+'44">🏆</div>';
+  } else {
+    logoWrap.innerHTML='<div class="cc-team-logo-ph">🏏</div>';
+  }
+
+  // Team name / bidder
+  document.getElementById('ccBidder').textContent=currentBidderName?'SOLD TO: '+currentBidderName.toUpperCase():'NO BIDS YET';
+
+  // Bid price with pop animation
   const ce=document.getElementById('ccBid');
+  if(bid!==prevBid){ce.classList.remove('pop');void ce.offsetWidth;ce.classList.add('pop');}
   ce.textContent=fmt(bid);
-  document.getElementById('ccBidder').textContent=currentBidderName?'🔥 '+currentBidderName:'No bids yet';
+  document.getElementById('ccBase').textContent='Base Price: '+fmt(p.basePrice);
+  prevBid=bid;
 
   // Timer strip
   const t=timer||0,tot=timerDuration||30;
-  const pct=Math.max(0,(t/tot)*100);
   const tf=document.getElementById('ccTimerFill');
-  tf.style.width=pct+'%';
+  tf.style.width=Math.max(0,(t/tot)*100)+'%';
   tf.className='cc-timer-fill'+(t<=5?' urg':'');
 }
 
 function renderTeams(leadId){
   const entries=Object.entries(OS.teams);
   document.getElementById('tpList').innerHTML=entries.map(([id,t])=>
-    '<div class="trow '+(id===leadId?'lead':'')+'">'+
+    '<div class="trow '+(id===leadId?'lead':'')+'" style="border-left:3px solid '+(t.color||'#00e5ff')+'">'+
       (id===leadId?'<div class="lbdg">LEADING</div>':'')+
       '<div class="trow-left">'+
-        '<div class="tstrip" style="background:'+(t.color||'#00e5ff')+'"></div>'+
+        (t.logo?'<img src="'+t.logo+'" style="width:34px;height:34px;border-radius:7px;object-fit:cover;flex-shrink:0">':
+          '<div class="tstrip" style="background:'+(t.color||'#00e5ff')+'"></div>')+
         '<div>'+
           '<div class="tn">'+t.name+'</div>'+
-          '<div style="font-size:10px;color:#1a1a1a;margin-top:1px">'+(t.players||[]).length+' players</div>'+
+          '<div class="tpc">'+(t.players||[]).length+' players signed</div>'+
         '</div>'+
       '</div>'+
-      '<div class="tb">'+fmt(t.currentBudget)+'</div>'+
+      '<div class="trow-right">'+
+        '<div class="tb">'+fmt(t.currentBudget)+'</div>'+
+        '<div class="tbl">purse left</div>'+
+      '</div>'+
     '</div>'
   ).join('');
 }

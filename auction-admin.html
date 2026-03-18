@@ -281,6 +281,14 @@ function doUnlock(){
   <div class="card" id="newTeamCard" style="display:none">
     <div class="card-hd"><div class="card-title">Add Team</div><button class="btn bgr bsm" style="width:auto;padding:5px 10px" onclick="toggleCard('newTeamCard')">✕</button></div>
     <div class="card-bd">
+      <div class="ig">
+        <label>Team Logo</label>
+        <div class="img-up" id="ntLogoBox">
+          <input type="file" accept="image/*" id="ntLogoFile" onchange="uploadAndSet(this,'ntLogo','ntLogoPrev')">
+          <div id="ntLogoPrev"><div style="font-size:28px;margin-bottom:4px">🏆</div><div style="font-size:11px;color:#555">Tap to upload logo</div></div>
+        </div>
+        <input type="hidden" id="ntLogo">
+      </div>
       <div class="ig"><label>Team Name</label><input type="text" id="ntName" placeholder="e.g. Dhaka Dynamites"></div>
       <div class="ig"><label>Manager Name</label><input type="text" id="ntManager" placeholder="e.g. Rahim"></div>
       <div class="b2" style="margin-bottom:11px">
@@ -871,10 +879,13 @@ async function addTeam(){
     name:nm, manager:document.getElementById('ntManager').value.trim()||nm,
     initialBudget:bgt, currentBudget:bgt,
     color:document.getElementById('ntColor').value,
+    logo:document.getElementById('ntLogo').value||'',
     players:[], createdAt:Date.now()
   });
   document.getElementById('ntName').value='';
   document.getElementById('ntManager').value='';
+  document.getElementById('ntLogo').value='';
+  document.getElementById('ntLogoPrev').innerHTML='<div style="font-size:28px;margin-bottom:4px">🏆</div><div style="font-size:11px;color:#555">Tap to upload logo</div>';
   toggleCard('newTeamCard');
   toast(nm+' added!');
 }

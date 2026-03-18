@@ -87,8 +87,9 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 .bid-panel{background:var(--c);border:1px solid var(--b);border-radius:12px;margin:0 14px 12px;padding:14px;}
 .bid-amount-disp{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:var(--p);text-align:center;margin:8px 0;padding:11px;background:rgba(0,229,255,.05);border-radius:9px;border:1px solid rgba(0,229,255,.15);}
 .inc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0;}
-.inc-btn{padding:11px 4px;border-radius:8px;border:1px solid rgba(0,229,255,.15);background:rgba(0,229,255,.06);color:var(--p);font-family:'Inter',sans-serif;font-size:11px;font-weight:700;cursor:pointer;text-align:center;}
+.inc-btn{padding:11px 4px;border-radius:8px;border:1px solid rgba(0,229,255,.15);background:rgba(0,229,255,.06);color:var(--p);font-family:'Inter',sans-serif;font-size:11px;font-weight:700;cursor:pointer;text-align:center;transition:all .1s;}
 .inc-btn:active{background:rgba(0,229,255,.2);transform:scale(.94);}
+.inc-btn.active{background:rgba(0,229,255,.25);border-color:var(--p);color:#fff;box-shadow:0 0 10px rgba(0,229,255,.3);}
 
 /* TEAM SELECT */
 .team-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
@@ -191,24 +192,23 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
     <!-- Main Controls -->
     <div style="padding:12px 14px 8px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
       <button class="btn bs" id="startBtn" onclick="startAuction()">▶ START</button>
-      <button class="btn bd" id="pauseBtn" onclick="pauseAuction()" disabled>⏸ PAUSE</button>
+      <button class="btn bd" id="pauseBtn" onclick="togglePause()" disabled>⏸ PAUSE</button>
       <button class="btn bor" onclick="shuffleNext()">🔀 NEXT</button>
+    </div>
+
+    <!-- Timer toggle -->
+    <div style="padding:0 14px 8px;display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      <button class="btn bgr bsm" id="timerToggleBtn" onclick="toggleTimer()">⏱ Timer: ON</button>
+      <button class="btn bgr bsm" onclick="resetBid()">↩ Reset Bid</button>
     </div>
 
     <!-- Bid Controls -->
     <div class="bid-panel">
-      <div style="font-size:10px;font-weight:700;color:#444;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">Bid Amount</div>
-      <div class="bid-amount-disp" id="bidAmountEl">-</div>
-      <div class="inc-grid" id="incGrid">
-        <div class="inc-btn" onclick="addInc(500)">+500</div>
-        <div class="inc-btn" onclick="addInc(1000)">+1K</div>
-        <div class="inc-btn" onclick="addInc(2000)">+2K</div>
-        <div class="inc-btn" onclick="addInc(5000)">+5K</div>
-        <div class="inc-btn" onclick="addInc(10000)">+10K</div>
-        <div class="inc-btn" onclick="addInc(25000)">+25K</div>
-        <div class="inc-btn" onclick="addInc(50000)">+50K</div>
-        <div class="inc-btn" onclick="resetBid()" style="color:#666">↩ Reset</div>
+      <div style="font-size:10px;font-weight:700;color:#444;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">
+        Set Bid Amount — tap once to set
       </div>
+      <div class="bid-amount-disp" id="bidAmountEl">-</div>
+      <div class="inc-grid" id="incGrid"></div>
     </div>
 
     <!-- Team Select -->
@@ -305,7 +305,7 @@ const fb={
 };
 
 let S={players:{},teams:{},auction:{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,timer:30,timerDuration:30},settings:{timerDuration:30,defaultBasePrice:5000,bidIncrements:[500,1000,2000,5000,10000,25000,50000]},activeTourId:null};
-let selBid=0,selTeam=null,timerInt=null,pickFilter='available';
+let selBid=0,selTeam=null,timerInt=null,pickFilter='available',useTimer=true;
 
 // ═══ INIT ═══
 (async function(){
@@ -390,11 +390,13 @@ async function startAuction(){
   if(Object.values(S.teams).length===0){toast('Add teams first!');return;}
   if(!S.auction.currentPlayerId){await shuffleNext();return;}
   clearInterval(timerInt);
-  const dur=parseInt(document.getElementById('ctrlTimer').value)||30;
+  const dur=parseInt(document.getElementById('ctrlTimer').value)||S.settings.timerDuration||30;
   const p=S.players[S.auction.currentPlayerId];
   const base=p?.basePrice||S.settings.defaultBasePrice||5000;
+  selBid=base;
+  document.getElementById('bidAmountEl').textContent=fmt(selBid);
   await fb.patch('auction',{status:'active',timer:dur,timerDuration:dur,currentBid:base,currentBidder:null,currentBidderName:null,tourId:S.activeTourId});
-  startLocalTimer();
+  if(useTimer) startLocalTimer();
   toast('Auction started!');
 }
 
@@ -457,26 +459,60 @@ async function doSelectPlayer(pid){
   await fb.set('auction',{status:'idle',currentPlayerId:pid,currentBid:p.basePrice||S.settings.defaultBasePrice||5000,currentBidder:null,currentBidderName:null,timer:dur,timerDuration:dur,tourId:S.activeTourId,isReAuction:p.status==='unsold'});
 }
 
+// Bid amount: tap once = set to currentBid + increment (NOT cumulative)
 function addInc(a){
   const p=S.players[S.auction.currentPlayerId];if(!p)return;
-  selBid=(S.auction.currentBid||p.basePrice)+a;
+  const base=S.auction.currentBid||p.basePrice||0;
+  selBid=base+a;
   document.getElementById('bidAmountEl').textContent=fmt(selBid);
+  // Highlight active button
+  document.querySelectorAll('#incGrid .inc-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
 }
 function resetBid(){
   const p=S.players[S.auction.currentPlayerId];if(!p)return;
   selBid=S.auction.currentBid||p.basePrice;
   document.getElementById('bidAmountEl').textContent=fmt(selBid);
+  document.querySelectorAll('#incGrid .inc-btn').forEach(b=>b.classList.remove('active'));
+}
+
+function toggleTimer(){
+  useTimer=!useTimer;
+  const btn=document.getElementById('timerToggleBtn');
+  if(btn){btn.textContent='⏱ Timer: '+(useTimer?'ON':'OFF');btn.style.color=useTimer?'var(--gn)':'var(--r)';}
+  if(!useTimer) clearInterval(timerInt);
+}
+
+async function togglePause(){
+  const status=S.auction.status;
+  if(status==='active'){
+    clearInterval(timerInt);
+    await fb.patch('auction',{status:'paused'});
+    document.getElementById('pauseBtn').textContent='▶ RESUME';
+    document.getElementById('pauseBtn').style.background='linear-gradient(135deg,#00c853,#007b33)';
+  } else if(status==='paused'){
+    await fb.patch('auction',{status:'active'});
+    if(useTimer) startLocalTimer();
+    document.getElementById('pauseBtn').textContent='⏸ PAUSE';
+    document.getElementById('pauseBtn').style.background='';
+  }
 }
 
 async function placeBid(){
   if(!selTeam){toast('Select a team!');return;}
   const t=S.teams[selTeam];
-  if(selBid<=(S.auction.currentBid||0)){toast('Bid must be higher!');return;}
-  if(selBid>t.currentBudget){toast(t.name+' budget:'+fmt(t.currentBudget));return;}
+  const curBid=S.auction.currentBid||0;
+  const hasBidder=!!S.auction.currentBidder;
+  // If no one has bid yet, base price bid is allowed (selBid >= curBid)
+  // If someone already bid, new bid must be strictly higher
+  if(hasBidder && selBid<=curBid){toast('Bid must be higher than '+fmt(curBid)+'!');return;}
+  if(!hasBidder && selBid<curBid){toast('Bid must be at least '+fmt(curBid)+'!');return;}
+  if(selBid>t.currentBudget){toast(t.name+' budget: '+fmt(t.currentBudget));return;}
   const dur=S.settings.timerDuration||30;
-  await fb.patch('auction',{currentBid:selBid,currentBidder:selTeam,currentBidderName:t.name,timer:dur,status:'active'});
-  startLocalTimer();
-  toast(t.name+' bids'+fmt(selBid));
+  await fb.patch('auction',{currentBid:selBid,currentBidder:selTeam,currentBidderName:t.name,timer:useTimer?dur:999,status:'active'});
+  if(useTimer) startLocalTimer();
+  document.querySelectorAll('#incGrid .inc-btn').forEach(b=>b.classList.remove('active'));
+  toast(t.name+' → '+fmt(selBid));
 }
 
 async function soldPlayer(){
@@ -507,19 +543,18 @@ async function unsoldPlayer(){
 async function autoNextPlayer(){
   const avail=Object.entries(S.players).filter(([,p])=>p.status==='available');
   if(!avail.length){
-    // All done
     await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:S.settings.timerDuration||30,timerDuration:S.settings.timerDuration||30,tourId:S.activeTourId});
     toast('All players done!');
     return;
   }
   const [pid]=avail[Math.floor(Math.random()*avail.length)];
   await doSelectPlayer(pid);
-  // Auto start auction
   const dur=S.settings.timerDuration||30;
   const p=S.players[pid];
   const base=p?.basePrice||S.settings.defaultBasePrice||5000;
-  await fb.patch('auction',{status:'active',timer:dur,timerDuration:dur,currentBid:base,currentBidder:null,currentBidderName:null,tourId:S.activeTourId});
-  startLocalTimer();
+  selBid=base;
+  await fb.patch('auction',{status:'active',timer:useTimer?dur:999,timerDuration:dur,currentBid:base,currentBidder:null,currentBidderName:null,tourId:S.activeTourId});
+  if(useTimer) startLocalTimer();
 }
 
 // RE-QUEUE UNSOLD
@@ -567,8 +602,12 @@ function renderAuction(){
   document.getElementById('timerSection').style.display=hasSec?'block':'none';
   document.getElementById('shuffleArea').style.display=hasSec?'none':'grid';
 
-  document.getElementById('startBtn').disabled=status==='active';
-  document.getElementById('pauseBtn').disabled=status!=='active';
+  document.getElementById('startBtn').disabled=(status==='active'||status==='paused');
+  document.getElementById('pauseBtn').disabled=!(status==='active'||status==='paused');
+  // Update pause button label
+  const pb=document.getElementById('pauseBtn');
+  if(status==='paused'){pb.textContent='▶ RESUME';pb.style.background='linear-gradient(135deg,#00c853,#007b33)';}
+  else{pb.textContent='⏸ PAUSE';pb.style.background='';}
   document.getElementById('soldBtn').disabled=!currentBidder;
 
   if(!p)return;
@@ -597,8 +636,11 @@ function renderAuction(){
   document.getElementById('timerBar').style.width=(Math.max(0,t/tot)*100)+'%';
   document.getElementById('timerBar').className='timer-bar-fill'+(t<=5?' urgent':'');
 
-  if(!selBid||selBid<(currentBid||p.basePrice))selBid=currentBid||p.basePrice;
-  document.getElementById('bidAmountEl').textContent=fmt(selBid);
+  // Only reset selBid if it's lower than current bid or zero
+  if(!selBid||selBid<=(currentBid||p.basePrice)){
+    selBid=currentBid||p.basePrice;
+    document.getElementById('bidAmountEl').textContent=fmt(selBid);
+  }
 }
 
 function updateStatsBar(){

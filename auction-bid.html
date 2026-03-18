@@ -335,8 +335,9 @@ function handleAuction(prev,cur){
   document.getElementById('tProg').style.strokeDashoffset=offset;
   document.getElementById('tProg').className='t-prog'+(t<=5?' urg':'');
 
-  // Bid controls
-  if(!myBid||myBid<=bid) myBid=bid+500;
+  // Bid amount: set to base price by default (allows 1st bid at base price)
+  const hasBidder=!!currentBidder;
+  if(!myBid||myBid<bid) myBid=bid;
   document.getElementById('myBidAmount').textContent=fmt(myBid);
 
   const canBid=status==='active'&&!isMeLead&&(S.team?.currentBudget||0)>=myBid;
@@ -348,13 +349,13 @@ function handleAuction(prev,cur){
 
 function addI(a){
   const cur=S.auction.currentBid||0;
-  myBid=Math.max(myBid,cur)+a;
+  myBid=cur+a;  // Always base from current bid, not from myBid
   document.getElementById('myBidAmount').textContent=fmt(myBid);
   checkBidBtn();
 }
 function resetI(){
   const cur=S.auction.currentBid||0;
-  myBid=cur+500;
+  myBid=cur;  // Reset to current bid (base price on first bid)
   document.getElementById('myBidAmount').textContent=fmt(myBid);
   checkBidBtn();
 }
@@ -369,12 +370,16 @@ function checkBidBtn(){
 async function submitBid(){
   const budget=S.team?.currentBudget||0;
   if(myBid>budget){toast('Budget exceeded!');return;}
-  if(myBid<=(S.auction.currentBid||0)){toast('Bid must be higher!');return;}
   if(S.auction.status!=='active'){toast('Auction not active!');return;}
   if(S.auction.currentBidder===teamId){toast('You\'re already leading!');return;}
+  const hasBidder=!!S.auction.currentBidder;
+  const curBid=S.auction.currentBid||0;
+  // Allow base price bid if no one has bid yet, else must be strictly higher
+  if(hasBidder && myBid<=curBid){toast('Bid must be higher than '+fmt(curBid)+'!');return;}
+  if(!hasBidder && myBid<curBid){toast('Minimum bid: '+fmt(curBid));return;}
   const dur=S.settings.timerDuration||30;
   await fb.patch('auction',{currentBid:myBid,currentBidder:teamId,currentBidderName:S.team.name,timer:dur,status:'active'});
-  toast('Bid placed:'+fmt(myBid));
+  toast('✓ Bid: '+fmt(myBid));
 }
 
 function renderSquad(){

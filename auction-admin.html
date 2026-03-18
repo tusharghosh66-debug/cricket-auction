@@ -325,6 +325,17 @@ function doUnlock(){
   </div>
 </div>
 
+<!-- ═══ EDIT MODAL ═══ -->
+<div class="modal" id="editModal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:1px" id="editModalTitle">Edit</div>
+      <button class="btn bgr bsm" style="width:auto;padding:5px 10px" onclick="closeEditModal()">✕</button>
+    </div>
+    <div id="editModalBody"></div>
+  </div>
+</div>
+
 <!-- TABS -->
 <div class="tabs">
   <div class="tab active" onclick="goTab(0)"><span class="ic">🏆</span><span class="lb">Leagues</span></div>
@@ -520,7 +531,10 @@ function renderTournaments(){
           : '<button class="btn bp bsm" onclick="activateTournament(\''+id+'\')">▶ Select</button>'
         )+
         '<button class="btn bsm bo" onclick="goPlayers(\''+id+'\')">👥 Players</button>'+
-        '<button class="btn bd bsm" onclick="deleteTournament(\''+id+'\')">🗑 Delete</button>'+
+        '<button class="btn bsm bor" onclick="editTournament(\''+id+'\')">✏ Edit</button>'+
+      '</div>'+
+      '<div style="margin-top:6px">'+
+        '<button class="btn bd bsm" onclick="deleteTournament(\''+id+'\')">🗑 Delete Tournament</button>'+
       '</div>'+
     '</div>';
   }).join('')+'</div>';
@@ -725,14 +739,7 @@ async function deletePlayer(id){
   toast(p.name+' removed');
 }
 
-async function editPlayer(id){
-  const p = players[id];
-  const nm=prompt('Name:',p.name); if(nm===null)return;
-  const bp=prompt('Base price:',p.basePrice); if(bp===null)return;
-  const st=prompt('Stats:',p.stats||''); if(st===null)return;
-  await fb.patch('tours/'+(playerTourId||activeTourId)+'/players/'+id,{name:nm.trim(),basePrice:parseInt(bp)||p.basePrice,stats:st.trim()});
-  toast('Updated!');
-}
+
 
 let activePF='all';
 function setPF(f,el){
@@ -778,8 +785,8 @@ function renderPlayers(){
         '<div class="p-price">'+fmt(p.basePrice)+'</div>'+
       '</div>'+
       '<div class="p-card-actions">'+
-        '<button class="btn bsm bo" style="padding:7px" onclick="editPlayer(\''+id+'\')">✏ Edit</button>'+
-        '<button class="btn bsm bd" style="padding:7px" onclick="deletePlayer(\''+id+'\')">✕ Delete</button>'+
+        '<button class="btn bsm bo" style="padding:7px;flex:1" onclick="editPlayer(\''+id+'\')">✏ Edit</button>'+
+        '<button class="btn bsm bd" style="padding:7px;flex:1" onclick="deletePlayer(\''+id+'\')">🗑 Delete</button>'+
       '</div>'+
     '</div>'
   ).join('')+'</div>';
@@ -878,11 +885,7 @@ async function deleteTeam(id){
   toast(teams[id].name+' deleted');
 }
 
-async function editBudget(id){
-  const t=teams[id];
-  const nb=prompt(t.name+' — new budget:',t.currentBudget);
-  if(nb!==null&&!isNaN(parseInt(nb))){await fb.patch('tours/'+activeTourId+'/teams/'+id,{currentBudget:parseInt(nb)});toast('Budget updated!');}
-}
+
 
 function renderTeams(){
   const el=document.getElementById('teamList');
@@ -892,9 +895,12 @@ function renderTeams(){
   el.innerHTML='<div style="padding:0 14px 14px">'+entries.map(([id,t])=>
     '<div style="background:var(--c);border:1px solid var(--b);border-left:3px solid '+(t.color||'var(--p)')+';border-radius:12px;padding:14px;margin-bottom:8px">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">'+
-        '<div>'+
-          '<div style="font-size:15px;font-weight:700;color:#ddd">'+t.name+'</div>'+
-          '<div style="font-size:11px;color:#555;margin-top:2px">Manager: '+(t.manager||'-')+' · '+(t.players||[]).length+' players</div>'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+          (t.logo?'<img src="'+t.logo+'" style="width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,.1)">':'<div style="width:40px;height:40px;border-radius:8px;background:'+(t.color||'var(--p)')+'22;display:flex;align-items:center;justify-content:center;font-size:20px">🏆</div>')+
+          '<div>'+
+            '<div style="font-size:15px;font-weight:700;color:#ddd">'+t.name+'</div>'+
+            '<div style="font-size:11px;color:#555;margin-top:2px">Manager: '+(t.manager||'-')+' · '+(t.players||[]).length+' players</div>'+
+          '</div>'+
         '</div>'+
         '<div style="text-align:right">'+
           '<div style="font-family:Orbitron,monospace;font-size:17px;color:var(--g)">'+fmt(t.currentBudget)+'</div>'+
@@ -907,8 +913,8 @@ function renderTeams(){
         '<button class="btn bp bsm" onclick="copyLink(\''+id+'\')">📋 Copy Link</button>'+
       '</div>'+
       '<div class="b2">'+
-        '<button class="btn bsm bo" onclick="editBudget(\''+id+'\')">✏ Budget</button>'+
-        '<button class="btn bsm bd" onclick="deleteTeam(\''+id+'\')">✕ Delete</button>'+
+        '<button class="btn bsm bo" onclick="editTeam(\''+id+'\')">✏ Edit</button>'+
+        '<button class="btn bsm bd" onclick="deleteTeam(\''+id+'\')">🗑 Delete</button>'+
       '</div>'+
     '</div>'
   ).join('')+'</div>';
@@ -965,7 +971,157 @@ async function clearData(){
 }
 
 // ══════════════════════════════
-// UTILS
+
+
+// ══════════════════════════════
+// EDIT MODALS
+// ══════════════════════════════
+
+function openEditModal(title, bodyHtml){
+  document.getElementById('editModalTitle').textContent = title;
+  document.getElementById('editModalBody').innerHTML = bodyHtml;
+  document.getElementById('editModal').classList.add('show');
+}
+function closeEditModal(){
+  document.getElementById('editModal').classList.remove('show');
+}
+
+// ── EDIT PLAYER ──
+function editPlayer(id){
+  const p = players[id];
+  const roleOpts = ['bat','bowl','all','wk'].map(r=>`<option value="${r}" ${p.role===r?'selected':''}>${{bat:'Batsman',bowl:'Bowler',all:'All-Rounder',wk:'Wicket Keeper'}[r]}</option>`).join('');
+  const typeOpts = ['local','home','away'].map(t=>`<option value="${t}" ${p.type===t?'selected':''}>${t.charAt(0).toUpperCase()+t.slice(1)}</option>`).join('');
+  openEditModal('Edit Player', `
+    <div class="ig">
+      <label>Photo</label>
+      <div class="img-up" style="margin-bottom:6px">
+        <input type="file" accept="image/*" onchange="uploadAndSet(this,'epImg','epImgPrev')">
+        <div id="epImgPrev">${p.img?`<img src="${p.img}"><div style="font-size:11px;color:var(--gn)">Current photo</div>`:'<div style="font-size:24px">📷</div><div style="font-size:11px;color:#555">Tap to change photo</div>'}</div>
+      </div>
+      <input type="hidden" id="epImg" value="${p.img||''}">
+    </div>
+    <div class="ig"><label>Name</label><input type="text" id="epName" value="${p.name}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
+    <div class="b2" style="margin-bottom:11px">
+      <div class="ig" style="margin:0"><label>Role</label><select id="epRole" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none;-webkit-appearance:none">${roleOpts}</select></div>
+      <div class="ig" style="margin:0"><label>Type</label><select id="epType" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none;-webkit-appearance:none">${typeOpts}</select></div>
+    </div>
+    <div class="ig"><label>Base Price (₹)</label><input type="number" id="epBase" value="${p.basePrice||5000}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
+    <div class="ig"><label>Stats / Notes</label><input type="text" id="epStats" value="${p.stats||''}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
+    <div class="b2">
+      <button class="btn bs" onclick="savePlayer('${id}')">Save</button>
+      <button class="btn bgr" onclick="closeEditModal()">Cancel</button>
+    </div>
+  `);
+}
+async function savePlayer(id){
+  const data={
+    name: document.getElementById('epName').value.trim(),
+    role: document.getElementById('epRole').value,
+    type: document.getElementById('epType').value,
+    basePrice: parseInt(document.getElementById('epBase').value)||5000,
+    stats: document.getElementById('epStats').value.trim(),
+    img: document.getElementById('epImg').value||players[id].img||''
+  };
+  if(!data.name){toast('Enter name!');return;}
+  await fb.patch('tours/'+(playerTourId||activeTourId)+'/players/'+id, data);
+  closeEditModal();
+  toast('Player updated!');
+}
+
+// ── EDIT TEAM ──
+function editTeam(id){
+  const t = teams[id];
+  openEditModal('Edit Team', `
+    <div class="ig">
+      <label>Team Logo</label>
+      <div class="img-up" style="margin-bottom:6px">
+        <input type="file" accept="image/*" onchange="uploadAndSet(this,'etLogo','etLogoPrev')">
+        <div id="etLogoPrev">${t.logo?`<img src="${t.logo}"><div style="font-size:11px;color:var(--gn)">Current logo</div>`:'<div style="font-size:24px">🏆</div><div style="font-size:11px;color:#555">Tap to upload logo</div>'}</div>
+      </div>
+      <input type="hidden" id="etLogo" value="${t.logo||''}">
+    </div>
+    <div class="ig"><label>Team Name</label><input type="text" id="etName" value="${t.name}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
+    <div class="ig"><label>Manager Name</label><input type="text" id="etManager" value="${t.manager||''}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
+    <div class="b2" style="margin-bottom:11px">
+      <div class="ig" style="margin:0"><label>Budget (₹)</label><input type="number" id="etBudget" value="${t.currentBudget}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
+      <div class="ig" style="margin:0"><label>Color</label><input type="color" id="etColor" value="${t.color||'#00e5ff'}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:8px;height:44px;cursor:pointer"></div>
+    </div>
+    <div class="b2">
+      <button class="btn bs" onclick="saveTeam('${id}')">Save</button>
+      <button class="btn bgr" onclick="closeEditModal()">Cancel</button>
+    </div>
+  `);
+}
+async function saveTeam(id){
+  const data={
+    name: document.getElementById('etName').value.trim(),
+    manager: document.getElementById('etManager').value.trim(),
+    currentBudget: parseInt(document.getElementById('etBudget').value)||teams[id].currentBudget,
+    color: document.getElementById('etColor').value,
+    logo: document.getElementById('etLogo').value||teams[id].logo||''
+  };
+  if(!data.name){toast('Enter team name!');return;}
+  await fb.patch('tours/'+activeTourId+'/teams/'+id, data);
+  closeEditModal();
+  toast('Team updated!');
+}
+
+// ── EDIT TOURNAMENT ──
+function editTournament(id){
+  const t = tournaments[id];
+  openEditModal('Edit Tournament', `
+    <div class="ig">
+      <label>Tournament Logo</label>
+      <div class="img-up" style="margin-bottom:6px">
+        <input type="file" accept="image/*" onchange="uploadAndSet(this,'etourLogo','etourLogoPrev')">
+        <div id="etourLogoPrev">${t.logo?`<img src="${t.logo}"><div style="font-size:11px;color:var(--gn)">Current logo</div>`:'<div style="font-size:24px">🏆</div><div style="font-size:11px;color:#555">Tap to change logo</div>'}</div>
+      </div>
+      <input type="hidden" id="etourLogo" value="${t.logo||''}">
+    </div>
+    <div class="ig"><label>Tournament Name</label><input type="text" id="etourName" value="${t.name}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
+    <div class="ig"><label>Short Code</label><input type="text" id="etourCode" value="${t.code}" maxlength="8" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
+    <div class="b2" style="margin-bottom:11px">
+      <div class="ig" style="margin:0"><label>Emoji</label><input type="text" id="etourIcon" value="${t.icon||'🏏'}" maxlength="4" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
+      <div class="ig" style="margin:0"><label>Color</label><input type="color" id="etourColor" value="${t.color||'#00e5ff'}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:8px;height:44px;cursor:pointer"></div>
+    </div>
+    <div class="b2">
+      <button class="btn bs" onclick="saveTournament('${id}')">Save</button>
+      <button class="btn bgr" onclick="closeEditModal()">Cancel</button>
+    </div>
+  `);
+}
+async function saveTournament(id){
+  const data={
+    name: document.getElementById('etourName').value.trim(),
+    code: document.getElementById('etourCode').value.trim().toUpperCase(),
+    icon: document.getElementById('etourIcon').value||'🏏',
+    color: document.getElementById('etourColor').value,
+    logo: document.getElementById('etourLogo').value||tournaments[id].logo||''
+  };
+  if(!data.name){toast('Enter name!');return;}
+  await fb.patch('tournaments/'+id, data);
+  if(id===activeTourId){
+    await fb.patch('activeTourn',{name:data.name,code:data.code,color:data.color});
+  }
+  closeEditModal();
+  toast('Tournament updated!');
+}
+
+// ── GENERIC UPLOAD FOR EDIT MODALS ──
+async function uploadAndSet(input, imgFieldId, prevId){
+  const file = input.files[0]; if(!file) return;
+  document.getElementById(prevId).innerHTML='<div class="spin"></div><div style="font-size:11px;color:#555">Uploading...</div>';
+  const url = await imgbbUpload(file);
+  if(url){
+    document.getElementById(imgFieldId).value = url;
+    document.getElementById(prevId).innerHTML=`<img src="${url}"><div style="font-size:11px;color:var(--gn)">✓ Uploaded</div>`;
+    toast('Uploaded!');
+  }else{
+    document.getElementById(prevId).innerHTML='<div style="font-size:24px">📷</div><div style="font-size:11px;color:#555">Upload failed</div>';
+    toast('Upload failed!');
+  }
+}
+
 // ══════════════════════════════
 function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
 function toast(msg){

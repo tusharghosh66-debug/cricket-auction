@@ -304,7 +304,7 @@ const fb={
   async del(p){try{await fetch(`${DB}/${p}.json`,{method:'DELETE'});}catch{}}
 };
 
-let S={players:{},teams:{},auction:{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,timer:30,timerDuration:30},settings:{timerDuration:30,defaultBasePrice:5000},activeTourId:null};
+let S={players:{},teams:{},auction:{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,timer:30,timerDuration:30},settings:{timerDuration:30,defaultBasePrice:5000,bidIncrements:[500,1000,2000,5000,10000,25000,50000]},activeTourId:null};
 let selBid=0,selTeam=null,timerInt=null,pickFilter='available';
 
 // ═══ INIT ═══
@@ -336,7 +336,7 @@ let selBid=0,selTeam=null,timerInt=null,pickFilter='available';
 function loadTournamentData(tid){
   pollPath(`tours/${tid}/players`,d=>{S.players=d||{};renderAuction();renderPickList();updateStatsBar();renderCtrlTeams();checkValidation();},1500);
   pollPath(`tours/${tid}/teams`,d=>{S.teams=d||{};renderTeamBidGrid();renderCtrlTeams();},2000);
-  pollPath(`tours/${tid}/settings`,d=>{if(!d)return;S.settings=d;document.getElementById('ctrlTimer').value=d.timerDuration||30;},5000);
+  pollPath(`tours/${tid}/settings`,d=>{if(!d)return;S.settings=d;document.getElementById('ctrlTimer').value=d.timerDuration||30;renderIncGrid();},3000);
   setConn(true);
   setTimeout(async()=>{
     const cur=await fb.get('auction');

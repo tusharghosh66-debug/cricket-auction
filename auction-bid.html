@@ -190,14 +190,7 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
     <!-- Bid Controls -->
     <div class="bid-controls">
       <div class="bid-amount-big" id="myBidAmount">-</div>
-      <div class="inc-grid">
-        <div class="inc-btn" onclick="addI(500)">+500</div>
-        <div class="inc-btn" onclick="addI(1000)">+1K</div>
-        <div class="inc-btn" onclick="addI(2000)">+2K</div>
-        <div class="inc-btn" onclick="addI(5000)">+5K</div>
-        <div class="inc-btn" onclick="addI(10000)">+10K</div>
-        <div class="inc-btn" onclick="resetI()">↩ Reset</div>
-      </div>
+      <div class="inc-grid" id="bidIncGrid"></div>
       <button class="bid-btn" id="bidBtn" onclick="submitBid()">⚡ BID NOW</button>
     </div>
   </div>
@@ -221,7 +214,7 @@ const params=new URLSearchParams(window.location.search);
 const tourId=params.get('t')||null;
 const teamId=params.get('team')||null;
 
-let S={team:null,players:{},auction:{},settings:{timerDuration:30}};
+let S={team:null,players:{},auction:{},settings:{timerDuration:30,bidIncrements:[500,1000,2000,5000,10000,25000,50000]}};
 let myBid=0,prevSoldStatus=null;
 
 (async function(){
@@ -251,7 +244,8 @@ let myBid=0,prevSoldStatus=null;
   // Poll
   pollPath(`tours/${tourId}/teams/${teamId}`,d=>{if(!d)return;S.team=d;updateTeamDisplay();renderSquad();},2000);
   pollPath(`tours/${tourId}/players`,d=>{S.players=d||{};renderSquad();},2000);
-  pollPath(`tours/${tourId}/settings`,d=>{if(!d)return;S.settings=d;},5000);
+  renderBidIncGrid(); // render defaults immediately
+  pollPath(`tours/${tourId}/settings`,d=>{if(!d)return;S.settings=d;renderBidIncGrid();},3000);
   pollPath('auction',d=>{if(!d)return;const prev={...S.auction};S.auction=d;handleAuction(prev,d);},800);
 })();
 
@@ -398,6 +392,14 @@ function renderSquad(){
       <div class="si-price">${fmt(p.soldPrice)}</div>
     </div>`;
   }).filter(Boolean).join('');
+}
+
+function renderBidIncGrid(){
+  const incs=S.settings.bidIncrements||[500,1000,2000,5000,10000,25000,50000];
+  const el=document.getElementById('bidIncGrid');
+  if(!el)return;
+  el.innerHTML=incs.map(v=>`<div class="inc-btn" onclick="addI(${v})">+${fmt(v).replace('₹','')}</div>`).join('')
+    +`<div class="inc-btn" onclick="resetI()">↩ Reset</div>`;
 }
 
 function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}

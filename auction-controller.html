@@ -227,6 +227,9 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
       <button class="btn bg" id="soldBtn" onclick="soldPlayer()" disabled>🔨 SOLD!</button>
       <button class="btn bgr" onclick="unsoldPlayer()">✕ UNSOLD</button>
     </div>
+    <div style="padding:0 14px 10px">
+      <button class="btn bd bsm" onclick="completeAuction()" style="opacity:.6">⏹ Complete Auction</button>
+    </div>
   </div>
 
   <!-- Shuffle button when no player -->
@@ -334,8 +337,8 @@ let selBid=0,selTeam=null,timerInt=null,pickFilter='available',useTimer=true;
 })();
 
 function loadTournamentData(tid){
-  pollPath(`tours/${tid}/players`,d=>{S.players=d||{};renderAuction();renderPickList();updateStatsBar();renderCtrlTeams();checkValidation();},1500);
-  pollPath(`tours/${tid}/teams`,d=>{S.teams=d||{};renderTeamBidGrid();renderCtrlTeams();},2000);
+  pollPath(`tours/${tid}/players`,d=>{S.players=d||{};renderAuction();renderPickList();updateStatsBar();renderCtrlTeams();checkValidation();},1000);
+  pollPath(`tours/${tid}/teams`,d=>{S.teams=d||{};renderTeamBidGrid();renderCtrlTeams();},1500);
   pollPath(`tours/${tid}/settings`,d=>{if(!d)return;S.settings=d;document.getElementById('ctrlTimer').value=d.timerDuration||30;renderIncGrid();},3000);
   setConn(true);
   setTimeout(async()=>{
@@ -366,6 +369,13 @@ function checkValidation(){
   else warn.classList.remove('show');
 }
 
+// Check if admin has opened auction session
+function isAuctionOpen(){
+  const s=S.auction.status;
+  // Only allow controller actions when admin has started (not idle)
+  return s==='waiting'||s==='active'||s==='paused'||s==='ended'||s==='sold'||s==='unsold';
+}
+
 // Auto-start when Admin presses START
 async function autoStartFromAdmin(){
   if(!S.activeTourId) return;
@@ -387,6 +397,7 @@ async function autoStartFromAdmin(){
 // ═══ AUCTION ═══
 async function startAuction(){
   if(!S.activeTourId){toast('No tournament!');return;}
+  if(!isAuctionOpen()){toast('Start auction from Admin first!');return;}
   if(Object.values(S.teams).length===0){toast('Add teams first!');return;}
   if(!S.auction.currentPlayerId){await shuffleNext();return;}
   clearInterval(timerInt);
@@ -419,6 +430,7 @@ function startLocalTimer(){
 // SHUFFLE — pick random available player
 async function shuffleNext(){
   if(!S.activeTourId){toast('No tournament!');return;}
+  if(!isAuctionOpen()){toast('Start auction from Admin first!');return;}
   const avail=Object.entries(S.players).filter(([,p])=>p.status==='available');
   if(!avail.length){
     const unsold=Object.entries(S.players).filter(([,p])=>p.status==='unsold');
@@ -438,6 +450,7 @@ async function pickPlayer(pid){
   const p=S.players[pid];
   if(!p){toast('Player not found!');return;}
   if(p.status==='sold'){toast('Already sold!');return;}
+  if(!isAuctionOpen()){toast('Start auction from Admin first!');return;}
   clearInterval(timerInt);
   await doSelectPlayer(pid);
   switchPage('auction',document.querySelector('.tab'));
@@ -566,6 +579,17 @@ async function resetUnsold(){
   const u={};unsold.forEach(([id])=>{u[id+'/status']='available';});
   await fb.patch(`tours/${S.activeTourId}/players`,u);
   toast(unsold.length+' players re-queued!');
+}
+
+async function completeAuction(){
+  if(!confirm('Mark auction as complete? Remaining players will stay as-is.'))return;
+  clearInterval(timerInt);
+  // Clear any active player
+  for(const [id,p] of Object.entries(S.players)){
+    if(p.status==='active') await fb.patch(`tours/${S.activeTourId}/players/${id}`,{status:'available'});
+  }
+  await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:S.settings.timerDuration||30,timerDuration:S.settings.timerDuration||30,tourId:S.activeTourId});
+  toast('Auction completed!');
 }
 
 async function clearAuction(){

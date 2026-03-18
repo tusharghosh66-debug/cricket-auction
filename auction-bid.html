@@ -227,9 +227,23 @@ let myBid=0,prevSoldStatus=null;
 (async function(){
   if(!tourId||!teamId){showError('Invalid link. Missing tournament or team ID.');return;}
 
-  // Load team info
-  const team=await fb.get(`tours/${tourId}/teams/${teamId}`);
-  if(!team){showError('Team not found. Check your link.');return;}
+  // Try loading team with retry
+  let team=null;
+  for(let i=0;i<3;i++){
+    team=await fb.get(`tours/${tourId}/teams/${teamId}`);
+    if(team) break;
+    await new Promise(r=>setTimeout(r,1000));
+  }
+  if(!team){
+    showError(`Team not found.<br><br>
+      <div style="font-size:11px;color:#555;margin-top:8px">
+        This could mean:<br>
+        • Link is outdated (tournament was recreated)<br>
+        • Team was deleted<br><br>
+        Ask the admin for a new link.
+      </div>`);
+    return;
+  }
   S.team=team;
   updateTeamDisplay();
   setConn(true);
@@ -270,9 +284,26 @@ function handleAuction(prev,cur){
     setTimeout(()=>document.getElementById('soldOverlay').classList.remove('show'),4000);
   }
 
-  if(status==='sold'||!currentPlayerId){
+  if(status==='sold'||status==='unsold'||status==='waiting'||!currentPlayerId){
     document.getElementById('noAuction').style.display='block';
     document.getElementById('auctionActive').style.display='none';
+    // Update waiting message based on status
+    const icon = document.querySelector('.na-icon');
+    const title = document.querySelector('.na-title');
+    const sub = document.querySelector('.na-sub');
+    if(status==='waiting'){
+      if(icon) icon.textContent='🎯';
+      if(title){title.textContent='STARTING SOON';title.style.color='var(--g)';}
+      if(sub) sub.textContent='Auction is about to begin!\nGet ready to bid.';
+    } else if(status==='unsold'){
+      if(icon) icon.textContent='⏭';
+      if(title){title.textContent='NEXT PLAYER';title.style.color='var(--p)';}
+      if(sub) sub.textContent='Loading next player...';
+    } else {
+      if(icon) icon.textContent='⏳';
+      if(title){title.textContent='WAITING';title.style.color='var(--p)';}
+      if(sub) sub.textContent='No auction in progress.\nWait for the host to start.';
+    }
     return;
   }
 
@@ -369,7 +400,7 @@ function renderSquad(){
   }).filter(Boolean).join('');
 }
 
-function'+fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
+function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 </script>
 </body>

@@ -172,6 +172,11 @@ function doUnlock(){
       <div class="ig"><label>Budget per Team (₹)</label><input type="number" id="tBudget" value="500000"></div>
       <div class="ig"><label>Default Base Price (₹)</label><input type="number" id="tBasePrice" value="5000"></div>
       <div class="ig"><label>Timer (seconds)</label><input type="number" id="tTimer" value="30" min="10" max="120"></div>
+      <div class="ig">
+        <label>Bid Increments (comma separated)</label>
+        <input type="text" id="tBidIncs" value="500,1000,2000,5000,10000,25000,50000" placeholder="500,1000,2000,5000,10000,25000,50000">
+        <div style="font-size:10px;color:#444;margin-top:4px">These will appear as +500, +1K etc in Controller</div>
+      </div>
       <div class="b2">
         <button class="btn bs" onclick="addTournament()">Create</button>
         <button class="btn bgr" onclick="toggleCard('newTourCard')">Cancel</button>
@@ -310,14 +315,7 @@ function doUnlock(){
   <div class="sec">Settings</div>
   <div style="margin:0 14px 14px">
     <div style="background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.2);border-radius:10px;padding:10px 13px;font-size:11px;color:var(--gn);margin-bottom:14px;font-weight:600;">🔥 Firebase: auctiontable-bb663 · Test Mode</div>
-    <div class="card">
-      <div class="card-hd"><div class="card-title">imgbb API Key</div></div>
-      <div class="card-bd">
-        <div style="background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.2);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--gn);margin-bottom:10px;">✓ API Key is set in app</div>
-        <div class="ig"><label>Update Key (optional)</label><input type="text" id="imgbbKeyInput" placeholder="Enter new imgbb key to update"></div>
-        <button class="btn bs" onclick="saveImgbb()">Update Key</button>
-      </div>
-    </div>
+
     <div class="card" style="margin-top:12px">
       <div class="card-hd"><div class="card-title" id="tourSettingsTitle">Tournament Settings</div></div>
       <div class="card-bd">
@@ -468,6 +466,7 @@ async function addTournament(){
   const tour = {
     name:nm, code,
     icon: document.getElementById('tIcon').value||'🏏',
+    bidIncrements: (document.getElementById('tBidIncs').value||'500,1000,2000,5000,10000,25000,50000').split(',').map(v=>parseInt(v.trim())).filter(Boolean),
     logo: document.getElementById('tLogoImg').value||'',
     color: document.getElementById('tColor').value,
     defaultBudget: parseInt(document.getElementById('tBudget').value)||500000,
@@ -477,7 +476,7 @@ async function addTournament(){
   };
   const r = await fb.push('tournaments', tour);
   if(r && r.name){
-    await fb.set('tours/'+r.name+'/settings',{timerDuration:tour.timerDuration,defaultBasePrice:tour.defaultBasePrice,defaultBudget:tour.defaultBudget,tournamentName:nm});
+    await fb.set('tours/'+r.name+'/settings',{timerDuration:tour.timerDuration,defaultBasePrice:tour.defaultBasePrice,defaultBudget:tour.defaultBudget,tournamentName:nm,bidIncrements:tour.bidIncrements});
     toast(nm+' created!');
     toggleCard('newTourCard');
     // Reset logo form
@@ -1157,6 +1156,7 @@ function editTournament(id){
       <div class="ig" style="margin:0"><label>Emoji</label><input type="text" id="etourIcon" value="${t.icon||'🏏'}" maxlength="4" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
       <div class="ig" style="margin:0"><label>Color</label><input type="color" id="etourColor" value="${t.color||'#00e5ff'}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:8px;height:44px;cursor:pointer"></div>
     </div>
+    <div class="ig"><label>Bid Increments (comma separated)</label><input type="text" id="etourIncs" value="${(t.bidIncrements||[500,1000,2000,5000,10000,25000,50000]).join(',')}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:13px;outline:none"></div>
     <div class="b2">
       <button class="btn bs" onclick="saveTournament('${id}')">Save</button>
       <button class="btn bgr" onclick="closeEditModal()">Cancel</button>
@@ -1169,12 +1169,14 @@ async function saveTournament(id){
     code: document.getElementById('etourCode').value.trim().toUpperCase(),
     icon: document.getElementById('etourIcon').value||'🏏',
     color: document.getElementById('etourColor').value,
-    logo: document.getElementById('etourLogo').value||tournaments[id].logo||''
+    logo: document.getElementById('etourLogo').value||tournaments[id].logo||'',
+    bidIncrements: (document.getElementById('etourIncs').value||'500,1000,2000,5000,10000,25000,50000').split(',').map(v=>parseInt(v.trim())).filter(Boolean)
   };
   if(!data.name){toast('Enter name!');return;}
   await fb.patch('tournaments/'+id, data);
   if(id===activeTourId){
     await fb.patch('activeTourn',{name:data.name,code:data.code,color:data.color});
+    await fb.patch('tours/'+id+'/settings',{bidIncrements:data.bidIncrements});
   }
   closeEditModal();
   toast('Tournament updated!');

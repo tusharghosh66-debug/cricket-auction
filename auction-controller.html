@@ -199,7 +199,7 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
     <div class="bid-panel">
       <div style="font-size:10px;font-weight:700;color:#444;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">Bid Amount</div>
       <div class="bid-amount-disp" id="bidAmountEl">-</div>
-      <div class="inc-grid">
+      <div class="inc-grid" id="incGrid">
         <div class="inc-btn" onclick="addInc(500)">+500</div>
         <div class="inc-btn" onclick="addInc(1000)">+1K</div>
         <div class="inc-btn" onclick="addInc(2000)">+2K</div>
@@ -490,17 +490,36 @@ async function soldPlayer(){
   await fb.patch(`tours/${S.activeTourId}/teams/${tid}`,{currentBudget:(team.currentBudget||0)-amt,players:[...cp,pid]});
   await fb.patch('auction',{status:'sold',lastSoldPlayer:player.name,lastSoldTeam:team.name,lastSoldPrice:amt});
   toast('SOLD! '+player.name+' → '+team.name);
-  setTimeout(async()=>{
-    await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:S.settings.timerDuration||30,timerDuration:S.settings.timerDuration||30,tourId:S.activeTourId});
-  },4000);
+  // Auto next player after 3.5s
+  setTimeout(()=>autoNextPlayer(), 3500);
 }
 
 async function unsoldPlayer(){
   const pid=S.auction.currentPlayerId;if(!pid)return;
   clearInterval(timerInt);
   await fb.patch(`tours/${S.activeTourId}/players/${pid}`,{status:'unsold'});
-  await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:S.settings.timerDuration||30,timerDuration:S.settings.timerDuration||30,tourId:S.activeTourId});
+  await fb.set('auction',{status:'unsold',currentPlayerId:pid,currentBid:0,currentBidder:null,currentBidderName:null,timer:S.settings.timerDuration||30,timerDuration:S.settings.timerDuration||30,tourId:S.activeTourId});
   toast('Marked unsold');
+  // Auto next player after 2.5s
+  setTimeout(()=>autoNextPlayer(), 2500);
+}
+
+async function autoNextPlayer(){
+  const avail=Object.entries(S.players).filter(([,p])=>p.status==='available');
+  if(!avail.length){
+    // All done
+    await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:S.settings.timerDuration||30,timerDuration:S.settings.timerDuration||30,tourId:S.activeTourId});
+    toast('All players done!');
+    return;
+  }
+  const [pid]=avail[Math.floor(Math.random()*avail.length)];
+  await doSelectPlayer(pid);
+  // Auto start auction
+  const dur=S.settings.timerDuration||30;
+  const p=S.players[pid];
+  const base=p?.basePrice||S.settings.defaultBasePrice||5000;
+  await fb.patch('auction',{status:'active',timer:dur,timerDuration:dur,currentBid:base,currentBidder:null,currentBidderName:null,tourId:S.activeTourId});
+  startLocalTimer();
 }
 
 // RE-QUEUE UNSOLD
@@ -519,6 +538,14 @@ async function clearAuction(){
   clearInterval(timerInt);
   await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:S.settings.timerDuration||30,timerDuration:S.settings.timerDuration||30,tourId:S.activeTourId});
   toast('Auction reset');
+}
+
+function renderIncGrid(){
+  const incs = S.settings.bidIncrements || [500,1000,2000,5000,10000,25000,50000];
+  const el = document.getElementById('incGrid');
+  if(!el) return;
+  el.innerHTML = incs.map(v=>`<div class="inc-btn" onclick="addInc(${v})">+${fmt(v).replace('₹','')}</div>`).join('')
+    + `<div class="inc-btn" onclick="resetBid()" style="color:#666">↩ Reset</div>`;
 }
 
 async function saveCtrlSettings(){

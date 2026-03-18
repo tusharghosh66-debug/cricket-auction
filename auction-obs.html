@@ -4,32 +4,32 @@
 <meta charset="UTF-8">
 <title>Auction OBS Overlay</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@600;700;800&family=Orbitron:wght@700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@600;700;800;900&family=Orbitron:wght@700;900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:transparent;overflow:hidden;width:1920px;height:1080px;font-family:'Inter',sans-serif;}
+body{background:transparent;overflow:hidden;width:1920px;height:1080px;}
 
 /* IDLE */
 #idle{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .8s;pointer-events:none;}
 #idle.v{opacity:1;}
-.idle-title{font-family:'Bebas Neue',cursive;font-size:160px;color:#fff;letter-spacing:12px;text-shadow:0 0 80px rgba(0,229,255,.6);text-align:center;animation:gl 3s ease-in-out infinite;}
-.idle-sub{font-family:'Orbitron',monospace;font-size:24px;color:rgba(0,229,255,.7);letter-spacing:10px;margin-top:16px;text-align:center;}
-@keyframes gl{0%,100%{text-shadow:0 0 60px rgba(0,229,255,.4)}50%{text-shadow:0 0 160px rgba(0,229,255,.9),0 0 300px rgba(0,229,255,.3)}}
+.idle-title{font-family:'Bebas Neue';font-size:160px;color:#fff;letter-spacing:12px;text-shadow:0 0 80px rgba(0,229,255,.6);text-align:center;animation:gl 3s ease-in-out infinite;}
+.idle-sub{font-family:'Orbitron';font-size:24px;color:rgba(0,229,255,.7);letter-spacing:10px;margin-top:16px;text-align:center;}
+@keyframes gl{0%,100%{text-shadow:0 0 60px rgba(0,229,255,.4)}50%{text-shadow:0 0 160px rgba(0,229,255,.9)}}
 
 /* TOP BAR */
-#topBar{position:absolute;top:0;left:0;right:0;height:70px;background:linear-gradient(180deg,rgba(2,5,15,.9),transparent);display:flex;align-items:center;padding:0 60px;justify-content:space-between;opacity:0;transition:opacity .5s;pointer-events:none;}
+#topBar{position:absolute;top:0;left:0;right:0;height:70px;background:linear-gradient(180deg,rgba(0,0,0,.7),transparent);display:flex;align-items:center;padding:0 60px;justify-content:space-between;opacity:0;transition:opacity .5s;pointer-events:none;}
 #topBar.v{opacity:1;}
-.tb-name{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:#00e5ff;letter-spacing:4px;}
+.tb-name{font-family:'Orbitron';font-size:18px;font-weight:900;color:#00e5ff;letter-spacing:4px;}
 .tb-stats{display:flex;gap:50px;}
-.tb-s .v{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:#fff;}
-.tb-s .l{font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.35);text-transform:uppercase;}
+.tb-s .v{font-family:'Orbitron';font-size:22px;font-weight:900;color:#fff;}
+.tb-s .l{font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.4);text-transform:uppercase;}
 
 /* INTRO CARD */
-#introCard{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) scale(.88);width:1000px;background:linear-gradient(160deg,rgba(5,10,30,.97),rgba(2,5,16,.99));border:1px solid rgba(0,229,255,.3);border-radius:32px;padding:48px 56px;box-shadow:0 0 120px rgba(0,229,255,.08),0 40px 100px rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:opacity .5s,transform .5s;overflow:hidden;}
+#introCard{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%) scale(.88);width:1000px;background:linear-gradient(160deg,rgba(5,10,30,.97),rgba(2,5,16,.99));border:1px solid rgba(0,229,255,.3);border-radius:32px;padding:48px 56px;box-shadow:0 0 120px rgba(0,229,255,.08),0 40px 100px rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:opacity .5s,transform .5s;overflow:hidden;}
 #introCard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#00e5ff,transparent);animation:sl 3s ease-in-out infinite;}
 @keyframes sl{0%,100%{opacity:.3}50%{opacity:1}}
 #introCard.v{opacity:1;transform:translate(-50%,-50%) scale(1);}
 .ic-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
-.ic-num{font-family:'Orbitron',monospace;font-size:14px;color:rgba(0,229,255,.7);letter-spacing:3px;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);padding:6px 18px;border-radius:20px;}
+.ic-num{font-family:'Orbitron';font-size:14px;color:rgba(0,229,255,.7);letter-spacing:3px;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);padding:6px 18px;border-radius:20px;}
 .ic-badges{display:flex;gap:8px;}
 .rbadge{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 18px;border-radius:20px;}
 .rb-bat{background:rgba(0,255,136,.1);color:#00ff88;border:1px solid rgba(0,255,136,.25);}
@@ -43,103 +43,219 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;font-fami
 .ic-photo{width:180px;height:200px;border-radius:20px;object-fit:cover;object-position:top;border:2px solid rgba(255,255,255,.1);flex-shrink:0;}
 .ic-photo-ph{width:180px;height:200px;border-radius:20px;flex-shrink:0;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:72px;}
 .ic-text{flex:1;}
-.ic-name{font-family:'Bebas Neue',cursive;font-size:110px;color:#fff;line-height:.85;letter-spacing:4px;margin-bottom:8px;}
+.ic-name{font-family:'Bebas Neue';font-size:110px;color:#fff;line-height:.85;letter-spacing:4px;margin-bottom:8px;}
 .ic-stats{font-size:18px;color:rgba(255,255,255,.45);margin-bottom:20px;}
 .ic-prices{display:grid;grid-template-columns:1fr 1.6fr;gap:16px;}
 .pbox{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px 20px;}
 .bidbox{background:rgba(255,215,0,.05);border:1px solid rgba(255,215,0,.25);border-radius:14px;padding:16px 22px;text-align:right;}
 .plbl{font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase;margin-bottom:6px;}
-.bval{font-family:'Orbitron',monospace;font-size:26px;font-weight:900;color:rgba(255,255,255,.5);}
-.bidval{font-family:'Orbitron',monospace;font-size:64px;font-weight:900;color:#ffd700;line-height:1;text-shadow:0 0 40px rgba(255,215,0,.5);}
+.bval{font-family:'Orbitron';font-size:26px;font-weight:900;color:rgba(255,255,255,.5);}
+.bidval{font-family:'Orbitron';font-size:64px;font-weight:900;color:#ffd700;line-height:1;text-shadow:0 0 40px rgba(255,215,0,.5);}
 .bidval.pop{animation:bp .4s ease-out;}
-@keyframes bp{0%{transform:scale(1.25);color:#fff}100%{transform:scale(1);color:#ffd700}}
-.bidr{font-size:16px;font-weight:700;color:#00e5ff;margin-top:6px;letter-spacing:1px;}
+@keyframes bp{0%{transform:scale(1.25);color:#fff}100%{transform:scale(1)}}
+.bidr{font-size:16px;font-weight:700;color:#00e5ff;margin-top:6px;}
 .cdown-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:24px;overflow:hidden;}
 .cdown-fill{height:100%;background:linear-gradient(90deg,#00e5ff,#ffd700);border-radius:2px;width:100%;transition:width linear;}
 
 /* TEAMS PANEL */
-#teamPanel{position:absolute;right:50px;top:80px;bottom:160px;width:330px;opacity:0;pointer-events:none;transition:opacity .5s;}
+#teamPanel{position:absolute;right:50px;top:80px;bottom:170px;width:320px;opacity:0;pointer-events:none;transition:opacity .5s;}
 #teamPanel.v{opacity:1;}
-.tp-title{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-bottom:10px;}
-.trow{background:rgba(3,7,18,.92);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;transition:all .4s;position:relative;overflow:hidden;backdrop-filter:blur(20px);}
-.trow.lead{border-color:rgba(255,215,0,.5);background:rgba(255,215,0,.08);box-shadow:0 0 30px rgba(255,215,0,.1);}
-.trow-left{display:flex;align-items:center;gap:12px;}
-.tstrip{width:4px;height:40px;border-radius:3px;flex-shrink:0;}
-.trow .tn{font-size:16px;font-weight:700;color:rgba(255,255,255,.65);}
+.tp-title{font-family:'Orbitron';font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-bottom:10px;}
+.trow{background:rgba(3,7,18,.9);border:1px solid rgba(255,255,255,.07);border-left:4px solid #00e5ff;border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;transition:all .4s;position:relative;overflow:hidden;backdrop-filter:blur(20px);}
+.trow.lead{border-color:rgba(255,215,0,.5);border-left-color:#ffd700;background:rgba(255,215,0,.08);box-shadow:0 0 25px rgba(255,215,0,.08);}
+.trow-left{display:flex;align-items:center;gap:10px;}
+.trow .tn{font-size:15px;font-weight:700;color:rgba(255,255,255,.6);}
 .trow.lead .tn{color:#fff;}
-.trow .tpc{font-size:11px;color:rgba(255,255,255,.3);margin-top:3px;}
+.trow .tpc{font-size:11px;color:rgba(255,255,255,.28);margin-top:2px;}
 .trow.lead .tpc{color:rgba(255,215,0,.5);}
 .trow-right{text-align:right;}
-.trow .tb{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:rgba(255,255,255,.45);}
-.trow.lead .tb{color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,.4);}
-.trow .tbl{font-size:10px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
-.lbdg{position:absolute;top:0;right:0;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-size:9px;font-weight:900;letter-spacing:1.5px;padding:3px 10px;border-radius:0 14px 0 8px;}
+.trow .tb{font-family:'Orbitron';font-size:17px;font-weight:900;color:rgba(255,255,255,.4);}
+.trow.lead .tb{color:#ffd700;text-shadow:0 0 18px rgba(255,215,0,.4);}
+.trow .tbl{font-size:9px;color:rgba(255,255,255,.22);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.lbdg{position:absolute;top:0;right:0;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-size:9px;font-weight:900;letter-spacing:1.5px;padding:3px 10px;border-radius:0 12px 0 8px;}
 
-/* IPL BOTTOM BAR */
-#bottomBar{position:absolute;bottom:0;left:0;right:0;height:150px;opacity:0;pointer-events:none;transition:opacity .6s;}
+/* ═══════════════════════════════════
+   IPL BOTTOM BAR — exact match
+═══════════════════════════════════ */
+#bottomBar{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:110px;
+  opacity:0;pointer-events:none;
+  transition:opacity .5s;
+}
 #bottomBar.v{opacity:1;}
 
-.bb-bg{position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(3,6,25,.7) 25%,rgba(5,10,40,.98) 55%,rgba(3,6,22,1) 100%);}
+/* Main bar background — dark navy/purple */
+.bb-bar{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:90px;
+  background:linear-gradient(90deg,
+    rgba(20,5,60,.97) 0%,
+    rgba(30,10,80,.98) 20%,
+    rgba(25,8,70,.98) 50%,
+    rgba(30,10,80,.98) 80%,
+    rgba(20,5,60,.97) 100%
+  );
+  border-top:2px solid rgba(255,180,0,.3);
+}
 
-/* Rainbow glow line */
-.bb-glow{position:absolute;top:28px;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#ff4400,#ff9900,#ffd700,#00ff88,#00e5ff,#ffd700,#ff9900,#ff4400,transparent);opacity:.8;animation:gbr 3s linear infinite;}
-@keyframes gbr{0%{opacity:.6}50%{opacity:1}100%{opacity:.6}}
+/* Gradient fade above bar */
+.bb-fade{
+  position:absolute;
+  bottom:90px;left:0;right:0;height:50px;
+  background:linear-gradient(180deg,transparent,rgba(20,5,60,.4));
+  pointer-events:none;
+}
 
-/* SOLD tickers */
-.bb-ticker-left{position:absolute;left:0;top:31px;bottom:0;width:280px;overflow:hidden;background:linear-gradient(90deg,rgba(255,80,0,.2),rgba(255,80,0,.08));}
-.bb-ticker-right{position:absolute;right:0;top:31px;bottom:0;width:280px;overflow:hidden;background:linear-gradient(270deg,rgba(0,200,80,.2),rgba(0,200,80,.08));}
-.bb-scroll{white-space:nowrap;font-family:'Bebas Neue',cursive;font-size:56px;letter-spacing:8px;display:flex;align-items:center;height:100%;animation:scrl 3.5s linear infinite;}
-.bb-scroll-l{color:rgba(255,120,0,.75);}
-.bb-scroll-r{color:rgba(0,220,80,.75);}
+/* LEFT scrolling SOLD ticker */
+.bb-left{
+  position:absolute;
+  bottom:0;left:0;
+  width:240px;height:90px;
+  overflow:hidden;
+  display:flex;align-items:center;
+  background:linear-gradient(90deg,rgba(255,80,0,.25),rgba(255,120,0,.1));
+  border-right:1px solid rgba(255,150,0,.2);
+}
+.bb-scroll-l{
+  white-space:nowrap;
+  font-family:'Bebas Neue';
+  font-size:52px;
+  letter-spacing:10px;
+  color:rgba(255,130,0,.8);
+  animation:scrl 3s linear infinite;
+  text-shadow:0 0 20px rgba(255,100,0,.4);
+}
 @keyframes scrl{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-/* Center panel */
-.bb-center{position:absolute;left:280px;right:280px;top:31px;bottom:0;background:linear-gradient(135deg,rgba(15,8,50,.97),rgba(8,4,35,.99));display:flex;align-items:center;padding:0 30px 0 180px;gap:24px;border-left:1px solid rgba(255,215,0,.1);border-right:1px solid rgba(255,215,0,.1);}
+/* RIGHT scrolling SOLD ticker */
+.bb-right{
+  position:absolute;
+  bottom:0;right:0;
+  width:240px;height:90px;
+  overflow:hidden;
+  display:flex;align-items:center;
+  background:linear-gradient(270deg,rgba(0,200,80,.25),rgba(0,160,60,.1));
+  border-left:1px solid rgba(0,200,80,.2);
+}
+.bb-scroll-r{
+  white-space:nowrap;
+  font-family:'Bebas Neue';
+  font-size:52px;
+  letter-spacing:10px;
+  color:rgba(0,220,80,.8);
+  animation:scrr 3s linear infinite;
+  text-shadow:0 0 20px rgba(0,200,60,.4);
+}
+@keyframes scrr{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-/* Player photo rises above */
-#bbPhoto{position:absolute;left:280px;bottom:0;width:196px;height:260px;z-index:20;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;}
-#bbPhoto img{width:100%;height:100%;object-fit:cover;object-position:top center;filter:drop-shadow(0 -5px 25px rgba(0,200,255,.35));}
-#bbPhoto .ph{font-size:90px;line-height:1;}
+/* CENTER content area */
+.bb-center{
+  position:absolute;
+  bottom:0;
+  left:240px;right:240px;
+  height:90px;
+  display:flex;
+  align-items:center;
+  padding:0 30px 0 220px;
+  gap:20px;
+}
+
+/* Player photo — rises above bar, centered in bar */
+#bbPhoto{
+  position:absolute;
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:170px;
+  height:260px;
+  z-index:30;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+}
+#bbPhoto img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:top center;
+  filter:drop-shadow(0 -8px 20px rgba(0,150,255,.4));
+}
+#bbPhoto .ph{font-size:80px;line-height:1;color:#fff;}
 
 /* Team logo */
-.bb-tlogo{width:54px;height:54px;border-radius:10px;object-fit:cover;flex-shrink:0;box-shadow:0 0 15px rgba(255,255,255,.1);}
-.bb-tlogo-ph{width:54px;height:54px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;border:1px solid rgba(255,255,255,.12);flex-shrink:0;}
+#bbTeamLogo{flex-shrink:0;}
+.bb-tlogo{width:50px;height:50px;border-radius:8px;object-fit:cover;}
+.bb-tlogo-ph{width:50px;height:50px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);}
 
-/* Text info */
+/* Text */
 .bb-txt{flex:1;min-width:0;}
-.bb-pname{font-family:'Bebas Neue',cursive;font-size:54px;color:#fff;letter-spacing:4px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.bb-tname{font-size:17px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:2px;margin-top:5px;text-transform:uppercase;}
+.bb-pname{
+  font-family:'Inter';
+  font-size:32px;
+  font-weight:900;
+  color:#fff;
+  letter-spacing:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  line-height:1.1;
+}
+.bb-soldto{
+  font-family:'Inter';
+  font-size:18px;
+  font-weight:700;
+  color:rgba(255,255,255,.55);
+  letter-spacing:.5px;
+  margin-top:4px;
+}
 
-/* Price */
-.bb-pbox{text-align:right;flex-shrink:0;margin-left:auto;}
-.bb-plbl{font-size:12px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
-.bb-pval{font-family:'Bebas Neue',cursive;font-size:68px;color:#ffd700;line-height:1;letter-spacing:2px;text-shadow:0 0 30px rgba(255,215,0,.5);}
-.bb-pval.pop{animation:bp .35s ease-out;}
+/* Price — right side, big green */
+.bb-pbox{
+  text-align:right;
+  flex-shrink:0;
+  margin-left:auto;
+  padding-right:20px;
+}
+.bb-pval{
+  font-family:'Inter';
+  font-size:54px;
+  font-weight:900;
+  color:#00e878;
+  line-height:1;
+  letter-spacing:-1px;
+  text-shadow:0 0 25px rgba(0,230,100,.4);
+  display:flex;align-items:center;gap:4px;
+}
+.bb-pval .rp{font-size:40px;font-weight:700;}
+.bb-pval.pop{animation:bpp .35s ease-out;}
+@keyframes bpp{0%{transform:scale(1.2);color:#fff}100%{transform:scale(1)}}
+.bb-plbl{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:1px;text-transform:uppercase;margin-top:4px;text-align:right;}
 
-/* Timer */
-.bb-tbar{position:absolute;bottom:0;left:280px;right:280px;height:5px;background:rgba(255,255,255,.05);}
-.bb-tfill{height:100%;background:linear-gradient(90deg,#00e5ff,#00ff88,#ffd700);transition:width .95s linear;}
+/* Timer strip */
+.bb-tbar{position:absolute;bottom:0;left:240px;right:240px;height:4px;background:rgba(0,0,0,.3);}
+.bb-tfill{height:100%;background:linear-gradient(90deg,#00e5ff,#00ff88);transition:width .95s linear;}
 .bb-tfill.urg{background:linear-gradient(90deg,#ff3366,#ff6b35);}
 
-/* SOLD SCREEN */
+/* SOLD screen */
 #sold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
 #sold.v{opacity:1;}
 .scrd{background:linear-gradient(135deg,rgba(5,10,30,.99),rgba(2,5,18,1));border:2px solid rgba(255,215,0,.6);border-radius:36px;padding:56px 90px;text-align:center;box-shadow:0 0 140px rgba(255,215,0,.15);animation:ci .5s cubic-bezier(.34,1.56,.64,1);}
 @keyframes ci{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
 .hm{font-size:90px;display:block;margin-bottom:8px;animation:hs .6s ease-out;}
 @keyframes hs{0%{transform:rotate(-30deg) scale(1.5)}60%{transform:rotate(8deg)}100%{transform:rotate(0) scale(1)}}
-.stxt{font-family:'Bebas Neue',cursive;font-size:150px;color:#ffd700;letter-spacing:14px;line-height:1;text-shadow:0 0 70px rgba(255,215,0,.6);}
-.spnm{font-family:'Bebas Neue',cursive;font-size:72px;color:#fff;letter-spacing:5px;}
+.stxt{font-family:'Bebas Neue';font-size:150px;color:#ffd700;letter-spacing:14px;line-height:1;text-shadow:0 0 70px rgba(255,215,0,.6);}
+.spnm{font-family:'Bebas Neue';font-size:72px;color:#fff;letter-spacing:5px;}
 .sarr{font-size:32px;color:#00e5ff;margin:8px 0;}
-.stnm{font-family:'Orbitron',monospace;font-size:30px;font-weight:900;color:#00e5ff;letter-spacing:5px;text-transform:uppercase;margin-bottom:16px;}
-.spr{font-family:'Bebas Neue',cursive;font-size:80px;color:#ffd700;text-shadow:0 0 50px rgba(255,215,0,.5);letter-spacing:3px;}
+.stnm{font-family:'Orbitron';font-size:30px;font-weight:900;color:#00e5ff;letter-spacing:5px;margin-bottom:16px;}
+.spr{font-family:'Bebas Neue';font-size:80px;color:#ffd700;text-shadow:0 0 50px rgba(255,215,0,.5);}
 
 /* UNSOLD */
 #unsold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
 #unsold.v{opacity:1;}
 .ucrd{background:linear-gradient(135deg,rgba(5,10,30,.99),rgba(2,5,18,1));border:2px solid #333;border-radius:28px;padding:52px 90px;text-align:center;animation:ci .4s ease-out;}
-.utxt{font-family:'Bebas Neue',cursive;font-size:130px;color:#444;letter-spacing:10px;}
-.upnm{font-family:'Bebas Neue',cursive;font-size:60px;color:#555;letter-spacing:3px;}
+.utxt{font-family:'Bebas Neue';font-size:130px;color:#444;letter-spacing:10px;}
+.upnm{font-family:'Bebas Neue';font-size:60px;color:#555;letter-spacing:3px;}
 </style>
 </head>
 <body>
@@ -186,22 +302,31 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;font-fami
 
 <!-- IPL BOTTOM BAR -->
 <div id="bottomBar">
-  <div class="bb-bg"></div>
-  <div class="bb-glow"></div>
-  <div class="bb-ticker-left"><div class="bb-scroll bb-scroll-l">SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp;</div></div>
-  <div class="bb-ticker-right"><div class="bb-scroll bb-scroll-r">SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp; SOLD &nbsp;&nbsp;</div></div>
+  <div class="bb-fade"></div>
+  <div class="bb-bar"></div>
+
+  <div class="bb-left">
+    <div class="bb-scroll-l">SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp;</div>
+  </div>
+
+  <div class="bb-right">
+    <div class="bb-scroll-r">SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp;</div>
+  </div>
+
   <div id="bbPhoto"></div>
+
   <div class="bb-center">
     <div id="bbTeamLogo"></div>
     <div class="bb-txt">
       <div class="bb-pname" id="bbName">-</div>
-      <div class="bb-tname" id="bbTeam">-</div>
+      <div class="bb-soldto" id="bbTeam">-</div>
     </div>
     <div class="bb-pbox">
-      <div class="bb-plbl" id="bbPriceLbl">Base Price</div>
-      <div class="bb-pval" id="bbPrice">-</div>
+      <div class="bb-pval" id="bbPrice"><span class="rp">₹</span><span id="bbPriceNum">-</span></div>
+      <div class="bb-plbl" id="bbPriceLbl">BASE PRICE</div>
     </div>
   </div>
+
   <div class="bb-tbar"><div class="bb-tfill" id="bbTimerFill" style="width:100%"></div></div>
 </div>
 
@@ -212,24 +337,6 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;font-fami
 const DB='https://auctiontable-bb663-default-rtdb.firebaseio.com';
 async function fbGet(p){try{const r=await fetch(DB+'/'+p+'.json');return r.ok?await r.json():null;}catch{return null;}}
 
-// Particles bg
-(()=>{
-  const s=document.createElement('style');
-  s.textContent='@keyframes pf{from{transform:translateY(1100px);opacity:0}10%{opacity:.04}90%{opacity:.04}to{transform:translateY(-100px);opacity:0}}';
-  document.head.appendChild(s);
-  const bg=document.createElement('div');
-  bg.style.cssText='position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0';
-  document.body.insertBefore(bg,document.body.firstChild);
-  ['#00e5ff','#ffd700','#00ff88'].forEach((col,ci)=>{
-    for(let i=0;i<5;i++){
-      const p=document.createElement('div');
-      const sz=Math.random()*5+2;
-      p.style.cssText=`position:absolute;border-radius:50%;opacity:.04;animation:pf linear infinite;width:${sz}px;height:${sz}px;left:${Math.random()*100}%;background:${col};animation-duration:${Math.random()*22+14}s;animation-delay:${Math.random()*22}s`;
-      bg.appendChild(p);
-    }
-  });
-})();
-
 let OS={players:{},teams:{},auction:{},activeTourId:null,tourName:'CRICKET AUCTION'};
 let prevBid=0,soldTO=null,introTO=null,introShowing=false;
 const INTRO_SEC=10;
@@ -239,7 +346,7 @@ function hide(id){document.getElementById(id).classList.remove('v');}
 
 async function poll(){
   try{
-    const [auction,at]=await Promise.all([fbGet('auction'),fbGet('activeTourn')]);
+    const[auction,at]=await Promise.all([fbGet('auction'),fbGet('activeTourn')]);
     if(at&&at.id&&at.id!==OS.activeTourId){
       OS.activeTourId=at.id;
       OS.tourName=(at.name||'CRICKET AUCTION').toUpperCase();
@@ -247,14 +354,12 @@ async function poll(){
       document.getElementById('tbName').textContent=OS.tourName;
     }
     if(OS.activeTourId){
-      const [players,teams]=await Promise.all([
+      const[players,teams]=await Promise.all([
         fbGet('tours/'+OS.activeTourId+'/players'),
         fbGet('tours/'+OS.activeTourId+'/teams')
       ]);
       if(players){OS.players=players;updStats();}
-      if(teams&&JSON.stringify(teams)!==JSON.stringify(OS.teams)){
-        OS.teams=teams;renderTeams(OS.auction.currentBidder);
-      }
+      if(teams&&JSON.stringify(teams)!==JSON.stringify(OS.teams)){OS.teams=teams;renderTeams(OS.auction.currentBidder);}
     }
     if(auction){const prev={...OS.auction};OS.auction=auction;handle(prev,auction);}
   }catch(e){}
@@ -285,7 +390,7 @@ function handle(prev,cur){
     setTimeout(()=>{hide('unsold');show('idle');},3500);
     return;
   }
-  if(status==='sold'||status==='unsold') return;
+  if(status==='sold'||status==='unsold')return;
   clearTimeout(soldTO);hide('sold');hide('unsold');
 
   if(!currentPlayerId){
@@ -295,8 +400,7 @@ function handle(prev,cur){
   }
 
   hide('idle');show('topBar');show('teamPanel');
-  const p=OS.players[currentPlayerId];
-  if(!p) return;
+  const p=OS.players[currentPlayerId];if(!p)return;
 
   const isNew=prev.currentPlayerId!==currentPlayerId;
   if(isNew){
@@ -321,9 +425,9 @@ function updateIntroCard(p,cur,isReAuction){
   const rm={bat:['BAT','rb-bat'],bowl:['BOWL','rb-bowl'],all:['ALL','rb-all'],wk:['WK','rb-wk']};
   const[rn,rc]=rm[p.role]||['BAT','rb-bat'];
   let b='<span class="rbadge '+rc+'">'+rn+'</span>';
-  if(p.type==='home') b+='<span class="rbadge rb-home">HOME</span>';
-  if(p.type==='away') b+='<span class="rbadge rb-away">AWAY</span>';
-  if(isReAuction) b+='<span class="rbadge rb-re">RE-AUCTION</span>';
+  if(p.type==='home')b+='<span class="rbadge rb-home">HOME</span>';
+  if(p.type==='away')b+='<span class="rbadge rb-away">AWAY</span>';
+  if(isReAuction)b+='<span class="rbadge rb-re">RE-AUCTION</span>';
   document.getElementById('icBadges').innerHTML=b;
   document.getElementById('icImgWrap').innerHTML=p.img
     ?'<img src="'+p.img+'" class="ic-photo" onerror="this.style.display=\'none\'">'
@@ -342,7 +446,7 @@ function updateBottomBar(p,cur){
   const{currentBid,currentBidder,currentBidderName,timer,timerDuration}=cur;
   const bid=currentBid||p.basePrice;
 
-  // Photo
+  // Player photo
   document.getElementById('bbPhoto').innerHTML=p.img
     ?'<img src="'+p.img+'" onerror="this.style.display=\'none\'">'
     :'<div class="ph">👤</div>';
@@ -350,18 +454,23 @@ function updateBottomBar(p,cur){
   // Team logo
   const team=currentBidder?OS.teams[currentBidder]:null;
   const lw=document.getElementById('bbTeamLogo');
-  if(team&&team.logo) lw.innerHTML='<img src="'+team.logo+'" class="bb-tlogo">';
-  else if(team) lw.innerHTML='<div class="bb-tlogo-ph" style="background:'+team.color+'22;border-color:'+team.color+'55">🏆</div>';
+  if(team&&team.logo)lw.innerHTML='<img src="'+team.logo+'" class="bb-tlogo">';
+  else if(team)lw.innerHTML='<div class="bb-tlogo-ph" style="background:'+team.color+'22">🏆</div>';
   else lw.innerHTML='<div class="bb-tlogo-ph">🏏</div>';
 
+  // Name + team
   document.getElementById('bbName').textContent=(p.name||'').toUpperCase();
-  document.getElementById('bbTeam').textContent=currentBidderName?currentBidderName.toUpperCase():'NO BIDS YET';
+  document.getElementById('bbTeam').textContent=currentBidderName?'SOLD TO: '+currentBidderName.toUpperCase():'NO BIDS YET';
 
+  // Price
   const pe=document.getElementById('bbPrice');
+  const pn=document.getElementById('bbPriceNum');
   if(bid!==prevBid){pe.classList.remove('pop');void pe.offsetWidth;pe.classList.add('pop');}
-  pe.textContent=fmt(bid);
+  pn.textContent=fmtNum(bid);
   document.getElementById('bbPriceLbl').textContent=currentBidderName?'LEADING BID':'BASE PRICE';
+  prevBid=bid;
 
+  // Timer
   const t=timer||0,tot=timerDuration||30;
   const tf=document.getElementById('bbTimerFill');
   tf.style.width=Math.max(0,(t/tot)*100)+'%';
@@ -370,10 +479,10 @@ function updateBottomBar(p,cur){
 
 function renderTeams(leadId){
   document.getElementById('tpList').innerHTML=Object.entries(OS.teams).map(([id,t])=>
-    '<div class="trow '+(id===leadId?'lead':'')+'" style="border-left:4px solid '+(t.color||'#00e5ff')+'">'+
+    '<div class="trow '+(id===leadId?'lead':'')+'" style="border-left-color:'+(t.color||'#00e5ff')+'">'+
       (id===leadId?'<div class="lbdg">LEADING</div>':'')+
       '<div class="trow-left">'+
-        (t.logo?'<img src="'+t.logo+'" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0">':'<div class="tstrip" style="background:'+(t.color||'#00e5ff')+'"></div>')+
+        (t.logo?'<img src="'+t.logo+'" style="width:34px;height:34px;border-radius:7px;object-fit:cover;flex-shrink:0">':'<div style="width:4px;height:36px;border-radius:2px;background:'+(t.color||'#00e5ff')+';flex-shrink:0"></div>')+
         '<div><div class="tn">'+t.name+'</div><div class="tpc">'+(t.players||[]).length+' signed</div></div>'+
       '</div>'+
       '<div class="trow-right"><div class="tb">'+fmt(t.currentBudget)+'</div><div class="tbl">purse</div></div>'+
@@ -388,6 +497,13 @@ function updStats(){
   document.getElementById('tsTotal').textContent=pl.length;
 }
 
+function fmtNum(n){
+  if(!n&&n!==0)return'0';
+  if(n>=10000000)return(n/10000000).toFixed(2)+'Cr';
+  if(n>=100000)return(n/100000).toFixed(1)+'L';
+  if(n>=1000)return(n/1000).toFixed(n%1000===0?0:1)+'K';
+  return''+n;
+}
 function fmt(n){
   if(!n&&n!==0)return'0';
   if(n>=10000000)return'₹'+(n/10000000).toFixed(2)+'Cr';

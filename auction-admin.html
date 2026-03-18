@@ -182,9 +182,10 @@ function doUnlock(){
   <!-- AUCTION PANEL -->
   <div id="auctionPanel" style="display:none">
     <div style="margin:0 14px 12px;background:linear-gradient(135deg,#0d1b2a,#1a2744);border:1px solid rgba(0,229,255,.2);border-radius:14px;padding:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div><div style="font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Auction Status</div><div style="font-family:Orbitron,monospace;font-size:16px;font-weight:700" id="aStatus">IDLE</div></div>
-        <div style="text-align:right"><div style="font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Timer</div><div style="font-family:Orbitron,monospace;font-size:36px;font-weight:900;color:var(--g);line-height:1" id="aTimer">--</div></div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Auction Status</div>
+        <div style="font-family:Orbitron,monospace;font-size:20px;font-weight:700" id="aStatus">IDLE</div>
+        <div style="font-size:11px;color:#555;margin-top:4px" id="aPlayerName">—</div>
       </div>
       <div id="aBidRow" style="background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.15);border-radius:9px;padding:10px 13px;margin-bottom:12px;display:none">
         <div style="font-size:9px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Current Bid</div>
@@ -327,8 +328,21 @@ function doUnlock(){
       </div>
     </div>
     <div class="b2" style="margin-top:12px">
-      <button class="btn bd bsm" onclick="resetPlayers()">↺ Reset Players</button>
-      <button class="btn bd bsm" onclick="clearData()">🗑 Clear Data</button>
+      <!-- RESET OPTIONS -->
+      <div style="margin-top:4px">
+        <div style="font-size:10px;color:#444;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Reset Options</div>
+
+        <!-- Full Trial Reset - most prominent -->
+        <button class="btn bor" onclick="fullTrialReset()" style="margin-bottom:8px">
+          🔄 Full Trial Reset
+        </button>
+        <div style="font-size:10px;color:#555;margin-bottom:12px;padding:0 2px">Players → Available · Teams budget restored · Squad cleared · Auction reset</div>
+
+        <div class="b2">
+          <button class="btn bgr bsm" onclick="resetPlayers()">↺ Players Only</button>
+          <button class="btn bd bsm" onclick="clearData()">🗑 Delete All Data</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -572,15 +586,19 @@ function updateAuctionPanel(a){
   if(!activeTourId) return;
   document.getElementById('auctionPanel').style.display = 'block';
 
-  const statusColors = {active:'var(--gn)',paused:'var(--g)',idle:'#555',ended:'var(--r)',sold:'var(--p)'};
-  const statusLabels = {active:'LIVE 🔴',paused:'PAUSED',idle:'IDLE',ended:'TIME UP',sold:'SOLD!'};
+  const statusColors = {active:'var(--gn)',paused:'var(--g)',idle:'#555',ended:'var(--r)',sold:'var(--p)',waiting:'var(--g)'};
+  const statusLabels = {active:'LIVE 🔴',paused:'PAUSED',idle:'IDLE',ended:'TIME UP',sold:'SOLD!',waiting:'STARTING...'};
   const el = document.getElementById('aStatus');
   el.textContent = statusLabels[a.status]||'IDLE';
   el.style.color = statusColors[a.status]||'#555';
 
-  const te = document.getElementById('aTimer');
-  te.textContent = a.timer!=null?a.timer:'--';
-  te.style.color = (a.timer<=5&&a.status==='active')?'var(--r)':'var(--g)';
+  // Show current player name
+  const pnEl = document.getElementById('aPlayerName');
+  if(a.currentPlayerId && players[a.currentPlayerId]){
+    pnEl.textContent = '▶ '+players[a.currentPlayerId].name;
+  } else {
+    pnEl.textContent = '—';
+  }
 
   const br = document.getElementById('aBidRow');
   if(a.currentBid>0){
@@ -589,7 +607,8 @@ function updateAuctionPanel(a){
     document.getElementById('aBidder').textContent=a.currentBidderName||'No bids';
   } else br.style.display='none';
 
-  document.getElementById('aStartBtn').disabled = a.status==='active';
+  const isRunning = (a.status==='active'||a.status==='paused'||a.status==='waiting');
+  document.getElementById('aStartBtn').disabled = isRunning;
   document.getElementById('aStopBtn').disabled = (a.status==='idle'||!a.status);
 }
 
@@ -598,24 +617,13 @@ async function auctionStart(){
   if(Object.keys(teams).length===0){toast('Add teams first!');goTab(2);return;}
   const avail = Object.entries(players).filter(([,p])=>p.status==='available');
   if(avail.length===0){toast('No available players!');goTab(1);return;}
-
-  const cur = await fb.get('auction');
-  let pid = cur?.currentPlayerId;
-  if(!pid||!players[pid]||players[pid].status==='sold'){
-    pid = avail[0][0];
-    await fb.patch('tours/'+activeTourId+'/players/'+pid,{status:'active'});
-  }
-  const p = players[pid];
-  const dur = settings.timerDuration||30;
+  // Just signal Controller to start — Controller handles timer & player selection
   await fb.patch('auction',{
-    status:'active', currentPlayerId:pid,
-    timer:dur, timerDuration:dur,
-    currentBid:p?.basePrice||settings.defaultBasePrice||5000,
-    currentBidder:null, currentBidderName:null,
-    tourId:activeTourId
+    status:'waiting',
+    tourId:activeTourId,
+    currentBid:0, currentBidder:null, currentBidderName:null
   });
-  startATimer();
-  toast('Auction STARTED!');
+  toast('Auction session started! Open Controller to begin.');
 }
 
 async function auctionStop(){
@@ -630,22 +638,7 @@ async function auctionStop(){
   toast('Auction STOPPED');
 }
 
-function startATimer(){
-  clearInterval(auctionTimerInt);
-  auctionTimerInt = setInterval(async()=>{
-    const cur = await fb.get('auction');
-    if(!cur||cur.status!=='active'){clearInterval(auctionTimerInt);return;}
-    const nt = Math.max(0,(cur.timer||1)-1);
-    await fb.patch('auction',{timer:nt});
-    if(nt<=0){clearInterval(auctionTimerInt);await fb.patch('auction',{status:'ended'});}
-  },1000);
-}
-
-// Resume if page reopened while auction was live
-(async function(){
-  const cur = await fb.get('auction');
-  if(cur&&cur.status==='active'&&cur.timer>0) startATimer();
-})();
+// Timer is handled by Controller only
 
 // ══════════════════════════════
 // IMAGE UPLOAD
@@ -965,20 +958,89 @@ function saveImgbb(){
 }
 async function resetPlayers(){
   if(!activeTourId)return;
-  if(!confirm('Reset all players to Available?'))return;
+  if(!confirm('Reset all players to Available? (Sold/Unsold status will clear)'))return;
   const u={};
-  Object.keys(players).forEach(id=>{u[id+'/status']='available';u[id+'/soldTo']=null;u[id+'/soldToName']=null;u[id+'/soldPrice']=null;});
+  Object.keys(players).forEach(id=>{
+    u[id+'/status']='available';
+    u[id+'/soldTo']=null;
+    u[id+'/soldToName']=null;
+    u[id+'/soldPrice']=null;
+  });
   await fb.patch('tours/'+activeTourId+'/players',u);
   await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:settings.timerDuration||30,timerDuration:settings.timerDuration||30,tourId:activeTourId});
   toast('Players reset!');
 }
+
+async function fullTrialReset(){
+  if(!activeTourId)return;
+  if(!confirm('Full Reset?\n\n✓ All players → Available\n✓ Teams budget → Original\n✓ Teams squad cleared\n✓ Auction → Idle\n\nThis cannot be undone!'))return;
+
+  // 1. Reset all players
+  const pu={};
+  Object.keys(players).forEach(id=>{
+    pu[id+'/status']='available';
+    pu[id+'/soldTo']=null;
+    pu[id+'/soldToName']=null;
+    pu[id+'/soldPrice']=null;
+  });
+  if(Object.keys(pu).length) await fb.patch('tours/'+activeTourId+'/players',pu);
+
+  // 2. Reset all teams budget & clear players
+  const tu={};
+  Object.entries(teams).forEach(([id,t])=>{
+    tu[id+'/currentBudget']=t.initialBudget||t.currentBudget;
+    tu[id+'/players']=[];
+  });
+  if(Object.keys(tu).length) await fb.patch('tours/'+activeTourId+'/teams',tu);
+
+  // 3. Reset auction
+  await fb.set('auction',{
+    status:'idle',currentPlayerId:null,currentBid:0,
+    currentBidder:null,currentBidderName:null,
+    timer:settings.timerDuration||30,
+    timerDuration:settings.timerDuration||30,
+    tourId:activeTourId
+  });
+
+  toast('Full reset done! Ready for new auction.');
+}
+
 async function clearData(){
   if(!activeTourId)return;
-  if(!confirm('Clear all players & teams?'))return;
+  // Password confirmation modal
+  openEditModal('🗑 Delete All Data', `
+    <div style="background:rgba(255,51,102,.08);border:1px solid rgba(255,51,102,.2);border-radius:10px;padding:12px 14px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;color:var(--r);margin-bottom:4px">⚠️ Warning!</div>
+      <div style="font-size:12px;color:#888;line-height:1.6">This will permanently delete all players and teams for this tournament. This cannot be undone.</div>
+    </div>
+    <div class="ig">
+      <label>Enter Admin Password to confirm</label>
+      <input type="password" id="delPassInput" placeholder="••••••••"
+        style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;color:#fff;font-size:15px;outline:none;text-align:center;letter-spacing:3px;font-family:monospace"
+        onkeydown="if(event.key==='Enter')confirmDeleteAll()">
+      <div id="delPassErr" style="font-size:11px;color:var(--r);min-height:16px;margin-top:6px;font-weight:600"></div>
+    </div>
+    <div class="b2" style="margin-top:4px">
+      <button class="btn bd" onclick="confirmDeleteAll()">🗑 Delete Everything</button>
+      <button class="btn bgr" onclick="closeEditModal()">Cancel</button>
+    </div>
+  `);
+  setTimeout(()=>document.getElementById('delPassInput')?.focus(), 100);
+}
+
+async function confirmDeleteAll(){
+  const val = document.getElementById('delPassInput')?.value;
+  if(val !== ADMIN_PASS){
+    const e = document.getElementById('delPassErr');
+    if(e){ e.textContent='❌ Wrong password!'; setTimeout(()=>e.textContent='',2500); }
+    if(document.getElementById('delPassInput')) document.getElementById('delPassInput').value='';
+    return;
+  }
+  closeEditModal();
   await fb.del('tours/'+activeTourId+'/players');
   await fb.del('tours/'+activeTourId+'/teams');
   await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:30,timerDuration:30,tourId:activeTourId});
-  toast('Cleared!');
+  toast('✓ All data deleted!');
 }
 
 // ══════════════════════════════

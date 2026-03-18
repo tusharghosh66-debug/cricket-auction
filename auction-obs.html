@@ -163,25 +163,29 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;}
   gap:20px;
 }
 
-/* Player photo — rises above bar, centered in bar */
+/* Player photo — rounded frame, rises above bar */
 #bbPhoto{
   position:absolute;
   bottom:0;
   left:50%;
   transform:translateX(-50%);
   width:170px;
-  height:260px;
+  height:280px;
   z-index:30;
   display:flex;
   align-items:flex-end;
   justify-content:center;
 }
 #bbPhoto img{
-  width:100%;
-  height:100%;
+  width:170px;
+  height:170px;
   object-fit:cover;
   object-position:top center;
-  filter:drop-shadow(0 -8px 20px rgba(0,150,255,.4));
+  border-radius:50%;
+  border:4px solid rgba(255,215,0,.7);
+  box-shadow:0 0 0 6px rgba(255,215,0,.15),0 0 40px rgba(255,215,0,.3),0 0 80px rgba(0,150,255,.2);
+  display:block;
+  margin-bottom:0;
 }
 #bbPhoto .ph{font-size:80px;line-height:1;color:#fff;}
 
@@ -306,11 +310,11 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;}
   <div class="bb-bar"></div>
 
   <div class="bb-left">
-    <div class="bb-scroll-l">SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp;</div>
+    <div class="bb-scroll-l" id="bbTickerL">🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp;</div>
   </div>
 
   <div class="bb-right">
-    <div class="bb-scroll-r">SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp;</div>
+    <div class="bb-scroll-r" id="bbTickerR">🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp;</div>
   </div>
 
   <div id="bbPhoto"></div>
@@ -377,6 +381,12 @@ function handle(prev,cur){
     document.getElementById('sPnm').textContent=(lastSoldPlayer||'').toUpperCase();
     document.getElementById('sTnm').textContent=(lastSoldTeam||'').toUpperCase();
     document.getElementById('sPr').textContent=fmt(lastSoldPrice);
+    // Set tickers to SOLD
+    const soldTxt='SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; ';
+    const tl2=document.getElementById('bbTickerL');
+    const tr2=document.getElementById('bbTickerR');
+    if(tl2) tl2.textContent=soldTxt;
+    if(tr2) tr2.textContent=soldTxt;
     clearTimeout(soldTO);
     soldTO=setTimeout(()=>{hide('sold');show('idle');},5000);
     return;
@@ -460,7 +470,21 @@ function updateBottomBar(p,cur){
 
   // Name + team
   document.getElementById('bbName').textContent=(p.name||'').toUpperCase();
-  document.getElementById('bbTeam').textContent=currentBidderName?'SOLD TO: '+currentBidderName.toUpperCase():'NO BIDS YET';
+  document.getElementById('bbTeam').textContent=currentBidderName?'LEADING: '+currentBidderName.toUpperCase():'NO BIDS YET';
+
+  // Tickers — bidding = bidder info, no bid = BIDDING LIVE
+  const tl=document.getElementById('bbTickerL');
+  const tr=document.getElementById('bbTickerR');
+  if(currentBidderName){
+    const t1='🔥 '+currentBidderName.toUpperCase()+' LEADS &nbsp;·&nbsp; ';
+    const bidTxt=(t1).repeat(6);
+    if(tl){tl.innerHTML=bidTxt;tl.style.color='rgba(255,180,0,.85)';}
+    if(tr){tr.innerHTML=bidTxt;tr.style.color='rgba(255,180,0,.85)';}
+  } else {
+    const liveTxt='🏏 BIDDING LIVE &nbsp;·&nbsp; '.repeat(6);
+    if(tl){tl.innerHTML=liveTxt;tl.style.color='rgba(255,130,0,.8)';}
+    if(tr){tr.innerHTML=liveTxt;tr.style.color='rgba(0,220,80,.8)';}
+  }
 
   // Price
   const pe=document.getElementById('bbPrice');

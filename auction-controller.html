@@ -321,7 +321,16 @@ let selBid=0,selTeam=null,timerInt=null,pickFilter='available';
     setConn(true);
   }
   // Always poll auction
-  pollPath('auction',d=>{if(!d)return;S.auction={...S.auction,...d};renderAuction();updateStatsBar();},900);
+  pollPath('auction',d=>{
+    if(!d)return;
+    const prevStatus=S.auction.status;
+    S.auction={...S.auction,...d};
+    // If admin pressed START (waiting), auto-begin in controller
+    if(d.status==='waiting' && prevStatus!=='waiting' && S.activeTourId){
+      autoStartFromAdmin();
+    }
+    renderAuction();updateStatsBar();
+  },900);
 })();
 
 function loadTournamentData(tid){
@@ -355,6 +364,24 @@ function checkValidation(){
   else if(avail.length===0) msgs.push('⚠ All players sold/unsold. Tap "Re-queue Unsold" in Settings.');
   if(msgs.length){warn.innerHTML=msgs.join('<br>');warn.classList.add('show');}
   else warn.classList.remove('show');
+}
+
+// Auto-start when Admin presses START
+async function autoStartFromAdmin(){
+  if(!S.activeTourId) return;
+  // Pick first available player if none selected
+  if(!S.auction.currentPlayerId || !S.players[S.auction.currentPlayerId] || S.players[S.auction.currentPlayerId].status==='sold'){
+    const avail=Object.entries(S.players).filter(([,p])=>p.status==='available');
+    if(!avail.length){await fb.patch('auction',{status:'idle'});return;}
+    const [pid]=avail[Math.floor(Math.random()*avail.length)];
+    await doSelectPlayer(pid);
+  }
+  // Start auction
+  const dur=S.settings.timerDuration||30;
+  const p=S.players[S.auction.currentPlayerId];
+  const base=p?.basePrice||S.settings.defaultBasePrice||5000;
+  await fb.patch('auction',{status:'active',timer:dur,timerDuration:dur,currentBid:base,currentBidder:null,currentBidderName:null,tourId:S.activeTourId});
+  startLocalTimer();
 }
 
 // ═══ AUCTION ═══
@@ -623,7 +650,7 @@ function renderCtrlTeams(){
     </div>`).join('')+'</div>';
 }
 
-function'+fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
+function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 function switchPage(nm,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));

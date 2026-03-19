@@ -335,9 +335,10 @@ function handleAuction(prev,cur){
   document.getElementById('tProg').style.strokeDashoffset=offset;
   document.getElementById('tProg').className='t-prog'+(t<=5?' urg':'');
 
-  // Bid amount: set to base price by default (allows 1st bid at base price)
-  const hasBidder=!!currentBidder;
-  if(!myBid||myBid<bid) myBid=bid;
+  // Reset myBid when player changes
+  const isNewP=(S._lastPid!==currentPlayerId);
+  if(isNewP){S._lastPid=currentPlayerId;myBid=bid;}
+  else if(!myBid||myBid<bid) myBid=bid;
   document.getElementById('myBidAmount').textContent=fmt(myBid);
 
   const canBid=status==='active'&&!isMeLead&&(S.team?.currentBudget||0)>=myBid;

@@ -660,8 +660,14 @@ function renderAuction(){
   document.getElementById('timerBar').style.width=(Math.max(0,t/tot)*100)+'%';
   document.getElementById('timerBar').className='timer-bar-fill'+(t<=5?' urgent':'');
 
-  // Only reset selBid if it's lower than current bid or zero
-  if(!selBid||selBid<=(currentBid||p.basePrice)){
+  // Always reset selBid when player changes (new player = fresh base price)
+  const isNewPlayerRender = (S._lastRenderedPlayer !== currentPlayerId);
+  if(isNewPlayerRender){
+    S._lastRenderedPlayer = currentPlayerId;
+    selBid = p.basePrice||S.settings.defaultBasePrice||5000;
+    document.getElementById('bidAmountEl').textContent=fmt(selBid);
+    document.querySelectorAll('#incGrid .inc-btn').forEach(b=>b.classList.remove('active'));
+  } else if(!selBid||selBid<(currentBid||p.basePrice)){
     selBid=currentBid||p.basePrice;
     document.getElementById('bidAmountEl').textContent=fmt(selBid);
   }

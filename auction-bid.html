@@ -370,14 +370,16 @@ function checkBidBtn(){
 
 async function submitBid(){
   const budget=S.team?.currentBudget||0;
-  if(myBid>budget){toast('Budget exceeded!');return;}
   if(S.auction.status!=='active'){toast('Auction not active!');return;}
   if(S.auction.currentBidder===teamId){toast('You\'re already leading!');return;}
+  const p=S.players[S.auction.currentPlayerId];
+  const base=p?.basePrice||S.settings.defaultBasePrice||5000;
+  const curBid=S.auction.currentBid||base;
   const hasBidder=!!S.auction.currentBidder;
-  const curBid=S.auction.currentBid||0;
-  // Allow base price bid if no one has bid yet, else must be strictly higher
+  // Default myBid to base if not set
+  if(!myBid||myBid<base) myBid=base;
   if(hasBidder && myBid<=curBid){toast('Bid must be higher than '+fmt(curBid)+'!');return;}
-  if(!hasBidder && myBid<curBid){toast('Minimum bid: '+fmt(curBid));return;}
+  if(myBid>budget){toast('Budget exceeded!');return;}
   const dur=S.settings.timerDuration||30;
   await fb.patch('auction',{currentBid:myBid,currentBidder:teamId,currentBidderName:S.team.name,timer:dur,status:'active'});
   toast('✓ Bid: '+fmt(myBid));

@@ -513,13 +513,14 @@ async function togglePause(){
 
 async function placeBid(){
   if(!selTeam){toast('Select a team!');return;}
-  const t=S.teams[selTeam];
-  const curBid=S.auction.currentBid||0;
+  const t=S.teams[selTeam];if(!t)return;
+  const p=S.players[S.auction.currentPlayerId];if(!p)return;
+  const base=p.basePrice||S.settings.defaultBasePrice||5000;
+  const curBid=S.auction.currentBid||base;
   const hasBidder=!!S.auction.currentBidder;
-  // If no one has bid yet, base price bid is allowed (selBid >= curBid)
-  // If someone already bid, new bid must be strictly higher
+  // If selBid not set properly, default to base price
+  if(!selBid||selBid<base) selBid=base;
   if(hasBidder && selBid<=curBid){toast('Bid must be higher than '+fmt(curBid)+'!');return;}
-  if(!hasBidder && selBid<curBid){toast('Bid must be at least '+fmt(curBid)+'!');return;}
   if(selBid>t.currentBudget){toast(t.name+' budget: '+fmt(t.currentBudget));return;}
   const dur=S.settings.timerDuration||30;
   await fb.patch('auction',{currentBid:selBid,currentBidder:selTeam,currentBidderName:t.name,timer:useTimer?dur:999,status:'active'});

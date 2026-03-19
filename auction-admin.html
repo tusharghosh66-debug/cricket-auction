@@ -297,6 +297,7 @@ function doUnlock(){
       </div>
       <div class="ig"><label>Team Name</label><input type="text" id="ntName" placeholder="e.g. Dhaka Dynamites"></div>
       <div class="ig"><label>Manager Name</label><input type="text" id="ntManager" placeholder="e.g. Rahim"></div>
+      <div class="ig"><label>Bid Page Password</label><input type="text" id="ntPass" placeholder="e.g. team123" autocomplete="off"><div style="font-size:10px;color:#444;margin-top:4px">Manager এই password দিয়ে bid page এ ঢুকবে</div></div>
       <div class="b2" style="margin-bottom:11px">
         <div class="ig" style="margin:0"><label>Budget (₹)</label><input type="number" id="ntBudget" value="500000"></div>
         <div class="ig" style="margin:0"><label>Color</label><input type="color" id="ntColor" value="#00e5ff"></div>
@@ -872,10 +873,12 @@ async function addTeam(){
     initialBudget:bgt, currentBudget:bgt,
     color:document.getElementById('ntColor').value,
     logo:document.getElementById('ntLogo').value||'',
+    password:document.getElementById('ntPass').value.trim()||'',
     players:[], createdAt:Date.now()
   });
   document.getElementById('ntName').value='';
   document.getElementById('ntManager').value='';
+  document.getElementById('ntPass').value='';
   document.getElementById('ntLogo').value='';
   document.getElementById('ntLogoPrev').innerHTML='<div style="font-size:28px;margin-bottom:4px">🏆</div><div style="font-size:11px;color:#555">Tap to upload logo</div>';
   toggleCard('newTeamCard');
@@ -912,6 +915,7 @@ function renderTeams(){
       '</div>'+
       '<div style="background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.15);border-radius:9px;padding:9px 12px;margin-bottom:10px">'+
         '<div style="font-size:9px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Manager Bid Link</div>'+
+        (t.password?'<div style="font-size:10px;color:rgba(255,215,0,.7);margin-bottom:4px;font-weight:600">🔐 Password: '+t.password+'</div>':'')+
         '<div style="font-size:10px;color:var(--p);word-break:break-all;font-family:monospace;margin-bottom:6px" id="mlink-'+id+'">'+base+'auction-bid.html?t='+activeTourId+'&team='+id+'</div>'+
         '<button class="btn bp bsm" onclick="copyLink(\''+id+'\')">📋 Copy Link</button>'+
       '</div>'+
@@ -1114,6 +1118,7 @@ function editTeam(id){
     </div>
     <div class="ig"><label>Team Name</label><input type="text" id="etName" value="${t.name}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
     <div class="ig"><label>Manager Name</label><input type="text" id="etManager" value="${t.manager||''}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
+    <div class="ig"><label>Bid Page Password</label><input type="text" id="etPass" value="${t.password||''}" placeholder="Password (ফাঁকা = কোনো password নেই)" autocomplete="off" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
     <div class="b2" style="margin-bottom:11px">
       <div class="ig" style="margin:0"><label>Budget (₹)</label><input type="number" id="etBudget" value="${t.currentBudget}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:10px 12px;color:#fff;font-family:Inter,sans-serif;font-size:14px;outline:none"></div>
       <div class="ig" style="margin:0"><label>Color</label><input type="color" id="etColor" value="${t.color||'#00e5ff'}" style="width:100%;background:rgba(255,255,255,.04);border:1px solid var(--b);border-radius:9px;padding:8px;height:44px;cursor:pointer"></div>
@@ -1130,7 +1135,8 @@ async function saveTeam(id){
     manager: document.getElementById('etManager').value.trim(),
     currentBudget: parseInt(document.getElementById('etBudget').value)||teams[id].currentBudget,
     color: document.getElementById('etColor').value,
-    logo: document.getElementById('etLogo').value||teams[id].logo||''
+    logo: document.getElementById('etLogo').value||teams[id].logo||'',
+    password: document.getElementById('etPass').value.trim()
   };
   if(!data.name){toast('Enter team name!');return;}
   await fb.patch('tours/'+activeTourId+'/teams/'+id, data);

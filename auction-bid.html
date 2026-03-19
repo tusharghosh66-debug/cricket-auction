@@ -10,6 +10,9 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:100vh;}
 .hdr{background:linear-gradient(135deg,#0a1628,#111e35);border-bottom:1px solid var(--b);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;}
+/* LOCK SCREEN */
+#bidLockScreen{position:fixed;inset:0;background:#080c16;z-index:9999;display:flex;align-items:center;justify-content:center;}
+#bidLockScreen.hidden{display:none;}
 .hdr-l .logo{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;color:var(--p);letter-spacing:1px;}
 .hdr-l .team-name{font-size:12px;color:#888;margin-top:2px;}
 .conn{display:flex;align-items:center;gap:5px;font-size:11px;color:#555;}
@@ -110,6 +113,21 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 </style>
 </head>
 <body>
+
+<!-- BID PAGE LOCK SCREEN -->
+<div id="bidLockScreen" class="hidden">
+  <div style="background:#0f1623;border:1px solid rgba(0,229,255,.2);border-radius:20px;padding:40px 32px;width:300px;text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px">🔐</div>
+    <div id="bidLockTeamLogo" style="margin-bottom:10px"></div>
+    <div style="font-family:Orbitron,monospace;font-size:15px;font-weight:900;color:#00e5ff;letter-spacing:2px;margin-bottom:4px" id="bidLockTeamName">TEAM BID</div>
+    <div style="font-size:11px;color:#444;margin-bottom:22px;letter-spacing:1px">ENTER PASSWORD</div>
+    <input type="password" id="bidLockInput" placeholder="••••••••"
+      style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px;color:#fff;font-size:16px;outline:none;text-align:center;letter-spacing:4px;font-family:monospace;margin-bottom:8px"
+      onkeydown="if(event.key==='Enter')checkBidPass()">
+    <div id="bidLockErr" style="font-size:11px;color:#ff3366;min-height:18px;margin-bottom:10px;font-weight:600"></div>
+    <button onclick="checkBidPass()" style="width:100%;padding:13px;border:none;border-radius:10px;background:linear-gradient(135deg,#00b4d8,#0077b6);color:#fff;font-family:Inter,sans-serif;font-size:14px;font-weight:700;cursor:pointer">UNLOCK</button>
+  </div>
+</div>
 
 <div class="hdr">
   <div class="hdr-l">
@@ -217,6 +235,36 @@ const teamId=params.get('team')||null;
 let S={team:null,players:{},auction:{},settings:{timerDuration:30,bidIncrements:[500,1000,2000,5000,10000,25000,50000]}};
 let myBid=0,prevSoldStatus=null;
 
+function checkBidPass(){
+  const team=S.team;if(!team)return;
+  if(!team.password){hideLock();return;}
+  const val=document.getElementById('bidLockInput').value;
+  if(val===team.password){
+    sessionStorage.setItem('bid_auth_'+teamId,'1');
+    hideLock();
+  } else {
+    const e=document.getElementById('bidLockErr');
+    e.textContent='❌ Wrong password!';
+    document.getElementById('bidLockInput').value='';
+    document.getElementById('bidLockInput').focus();
+    setTimeout(()=>{e.textContent='';},2500);
+  }
+}
+function hideLock(){
+  document.getElementById('bidLockScreen').classList.add('hidden');
+}
+function showLock(team){
+  // Set team info on lock screen
+  const nm=document.getElementById('bidLockTeamName');
+  if(nm) nm.textContent=team.name||'TEAM BID';
+  const lg=document.getElementById('bidLockTeamLogo');
+  if(lg) lg.innerHTML=team.logo
+    ?'<img src="'+team.logo+'" style="width:60px;height:60px;border-radius:12px;object-fit:cover;margin-bottom:8px">'
+    :'';
+  document.getElementById('bidLockScreen').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('bidLockInput').focus(),100);
+}
+
 (async function(){
   if(!tourId||!teamId){showError('Invalid link. Missing tournament or team ID.');return;}
 
@@ -240,6 +288,15 @@ let myBid=0,prevSoldStatus=null;
   S.team=team;
   updateTeamDisplay();
   setConn(true);
+
+  // Check password
+  if(team.password){
+    if(sessionStorage.getItem('bid_auth_'+teamId)==='1'){
+      hideLock();
+    } else {
+      showLock(team);
+    }
+  }
 
   // Poll
   pollPath(`tours/${tourId}/teams/${teamId}`,d=>{if(!d)return;S.team=d;updateTeamDisplay();renderSquad();},2000);

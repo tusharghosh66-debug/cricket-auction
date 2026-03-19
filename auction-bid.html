@@ -410,7 +410,7 @@ function renderBidIncGrid(){
     +`<div class="inc-btn" onclick="resetI()">↩ Reset</div>`;
 }
 
-function fmt(n){if(!n&&n!==0)return'0';if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';return'₹'+n;}
+function fmt(n){if(!n&&n!==0)return'₹0';return'₹'+Number(n).toLocaleString('en-IN');}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 </script>
 </body>

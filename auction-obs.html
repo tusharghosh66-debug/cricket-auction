@@ -505,20 +505,8 @@ function updStats(){
   document.getElementById('tsTotal').textContent=pl.length;
 }
 
-function fmtNum(n){
-  if(!n&&n!==0)return'0';
-  if(n>=10000000)return(n/10000000).toFixed(2)+'Cr';
-  if(n>=100000)return(n/100000).toFixed(1)+'L';
-  if(n>=1000)return(n/1000).toFixed(n%1000===0?0:1)+'K';
-  return''+n;
-}
-function fmt(n){
-  if(!n&&n!==0)return'0';
-  if(n>=10000000)return'₹'+(n/10000000).toFixed(2)+'Cr';
-  if(n>=100000)return'₹'+(n/100000).toFixed(1)+'L';
-  if(n>=1000)return'₹'+(n/1000).toFixed(n%1000===0?0:1)+'K';
-  return'₹'+n;
-}
+function fmtNum(n){if(!n&&n!==0)return'0';return Number(n).toLocaleString('en-IN');}
+function fmt(n){if(!n&&n!==0)return'₹0';return'₹'+Number(n).toLocaleString('en-IN');}
 
 setTimeout(()=>show('idle'),400);
 poll();

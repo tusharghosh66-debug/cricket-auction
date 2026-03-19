@@ -74,174 +74,78 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;}
 .trow .tbl{font-size:9px;color:rgba(255,255,255,.22);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
 .lbdg{position:absolute;top:0;right:0;background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;font-size:9px;font-weight:900;letter-spacing:1.5px;padding:3px 10px;border-radius:0 12px 0 8px;}
 
-/* ═══════════════════════════════════
-   IPL BOTTOM BAR — exact match
-═══════════════════════════════════ */
-#bottomBar{
-  position:absolute;
-  bottom:0;left:0;right:0;
-  height:110px;
-  opacity:0;pointer-events:none;
-  transition:opacity .5s;
-}
+/* IPL BOTTOM BAR */
+#bottomBar{position:absolute;bottom:0;left:0;right:0;height:110px;opacity:0;pointer-events:none;transition:opacity .5s;}
 #bottomBar.v{opacity:1;}
-
-/* Main bar background — dark navy/purple */
-.bb-bar{
-  position:absolute;
-  bottom:0;left:0;right:0;
-  height:90px;
-  background:linear-gradient(90deg,
-    rgba(20,5,60,.97) 0%,
-    rgba(30,10,80,.98) 20%,
-    rgba(25,8,70,.98) 50%,
-    rgba(30,10,80,.98) 80%,
-    rgba(20,5,60,.97) 100%
-  );
-  border-top:2px solid rgba(255,180,0,.3);
-}
-
-/* Gradient fade above bar */
-.bb-fade{
-  position:absolute;
-  bottom:90px;left:0;right:0;height:50px;
-  background:linear-gradient(180deg,transparent,rgba(20,5,60,.4));
-  pointer-events:none;
-}
-
-/* LEFT scrolling SOLD ticker */
-.bb-left{
-  position:absolute;
-  bottom:0;left:0;
-  width:240px;height:90px;
-  overflow:hidden;
-  display:flex;align-items:center;
-  background:linear-gradient(90deg,rgba(255,80,0,.25),rgba(255,120,0,.1));
-  border-right:1px solid rgba(255,150,0,.2);
-}
-.bb-scroll-l{
-  white-space:nowrap;
-  font-family:'Bebas Neue';
-  font-size:52px;
-  letter-spacing:10px;
-  color:rgba(255,130,0,.8);
-  animation:scrl 3s linear infinite;
-  text-shadow:0 0 20px rgba(255,100,0,.4);
-}
+.bb-bar{position:absolute;bottom:0;left:0;right:0;height:90px;background:linear-gradient(90deg,rgba(20,5,60,.97) 0%,rgba(30,10,80,.98) 20%,rgba(25,8,70,.98) 50%,rgba(30,10,80,.98) 80%,rgba(20,5,60,.97) 100%);border-top:2px solid rgba(255,180,0,.3);}
+.bb-fade{position:absolute;bottom:90px;left:0;right:0;height:50px;background:linear-gradient(180deg,transparent,rgba(20,5,60,.4));pointer-events:none;}
+.bb-left{position:absolute;bottom:0;left:0;width:240px;height:90px;overflow:hidden;display:flex;align-items:center;background:linear-gradient(90deg,rgba(255,80,0,.25),rgba(255,120,0,.1));border-right:1px solid rgba(255,150,0,.2);}
+.bb-scroll-l{white-space:nowrap;font-family:'Bebas Neue';font-size:52px;letter-spacing:10px;color:rgba(255,130,0,.8);animation:scrl 3s linear infinite;text-shadow:0 0 20px rgba(255,100,0,.4);}
 @keyframes scrl{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-
-/* RIGHT scrolling SOLD ticker */
-.bb-right{
-  position:absolute;
-  bottom:0;right:0;
-  width:240px;height:90px;
-  overflow:hidden;
-  display:flex;align-items:center;
-  background:linear-gradient(270deg,rgba(0,200,80,.25),rgba(0,160,60,.1));
-  border-left:1px solid rgba(0,200,80,.2);
-}
-.bb-scroll-r{
-  white-space:nowrap;
-  font-family:'Bebas Neue';
-  font-size:52px;
-  letter-spacing:10px;
-  color:rgba(0,220,80,.8);
-  animation:scrr 3s linear infinite;
-  text-shadow:0 0 20px rgba(0,200,60,.4);
-}
+.bb-right{position:absolute;bottom:0;right:0;width:240px;height:90px;overflow:hidden;display:flex;align-items:center;background:linear-gradient(270deg,rgba(0,200,80,.25),rgba(0,160,60,.1));border-left:1px solid rgba(0,200,80,.2);}
+.bb-scroll-r{white-space:nowrap;font-family:'Bebas Neue';font-size:52px;letter-spacing:10px;color:rgba(0,220,80,.8);animation:scrr 3s linear infinite;text-shadow:0 0 20px rgba(0,200,60,.4);}
 @keyframes scrr{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-
-/* CENTER content area */
-.bb-center{
-  position:absolute;
-  bottom:0;
-  left:240px;right:240px;
-  height:90px;
-  display:flex;
-  align-items:center;
-  padding:0 30px 0 220px;
-  gap:20px;
-}
-
-/* Player photo — rounded frame, rises above bar */
-#bbPhoto{
-  position:absolute;
-  bottom:0;
-  left:50%;
-  transform:translateX(-50%);
-  width:170px;
-  height:280px;
-  z-index:30;
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-}
-#bbPhoto img{
-  width:170px;
-  height:170px;
-  object-fit:cover;
-  object-position:top center;
-  border-radius:50%;
-  border:4px solid rgba(255,215,0,.7);
-  box-shadow:0 0 0 6px rgba(255,215,0,.15),0 0 40px rgba(255,215,0,.3),0 0 80px rgba(0,150,255,.2);
-  display:block;
-  margin-bottom:0;
-}
+.bb-center{position:absolute;bottom:0;left:240px;right:240px;height:90px;display:flex;align-items:center;padding:0 30px 0 220px;gap:20px;}
+#bbPhoto{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:170px;height:260px;z-index:30;display:flex;align-items:flex-end;justify-content:center;}
+#bbPhoto img{width:170px;height:260px;object-fit:cover;object-position:top center;border-radius:50% 50% 0 0 / 40% 40% 0 0;border:3px solid rgba(255,215,0,.5);box-shadow:0 -8px 30px rgba(255,215,0,.2),0 0 50px rgba(0,150,255,.3);}
 #bbPhoto .ph{font-size:80px;line-height:1;color:#fff;}
-
-/* Team logo */
 #bbTeamLogo{flex-shrink:0;}
 .bb-tlogo{width:50px;height:50px;border-radius:8px;object-fit:cover;}
 .bb-tlogo-ph{width:50px;height:50px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);}
-
-/* Text */
 .bb-txt{flex:1;min-width:0;}
-.bb-pname{
-  font-family:'Inter';
-  font-size:32px;
-  font-weight:900;
-  color:#fff;
-  letter-spacing:1px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  line-height:1.1;
-}
-.bb-soldto{
-  font-family:'Inter';
-  font-size:18px;
-  font-weight:700;
-  color:rgba(255,255,255,.55);
-  letter-spacing:.5px;
-  margin-top:4px;
-}
-
-/* Price — right side, big green */
-.bb-pbox{
-  text-align:right;
-  flex-shrink:0;
-  margin-left:auto;
-  padding-right:20px;
-}
-.bb-pval{
-  font-family:'Inter';
-  font-size:54px;
-  font-weight:900;
-  color:#00e878;
-  line-height:1;
-  letter-spacing:-1px;
-  text-shadow:0 0 25px rgba(0,230,100,.4);
-  display:flex;align-items:center;gap:4px;
-}
+.bb-pname{font-family:'Inter';font-size:32px;font-weight:900;color:#fff;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1;}
+.bb-soldto{font-family:'Inter';font-size:18px;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:.5px;margin-top:4px;}
+.bb-pbox{text-align:right;flex-shrink:0;margin-left:auto;padding-right:20px;}
+.bb-pval{font-family:'Inter';font-size:54px;font-weight:900;color:#00e878;line-height:1;letter-spacing:-1px;text-shadow:0 0 25px rgba(0,230,100,.4);display:flex;align-items:center;gap:4px;transition:all .3s;}
 .bb-pval .rp{font-size:40px;font-weight:700;}
 .bb-pval.pop{animation:bpp .35s ease-out;}
 @keyframes bpp{0%{transform:scale(1.2);color:#fff}100%{transform:scale(1)}}
 .bb-plbl{font-size:12px;font-weight:700;color:rgba(255,255,255,.35);letter-spacing:1px;text-transform:uppercase;margin-top:4px;text-align:right;}
-
-/* Timer strip */
 .bb-tbar{position:absolute;bottom:0;left:240px;right:240px;height:4px;background:rgba(0,0,0,.3);}
 .bb-tfill{height:100%;background:linear-gradient(90deg,#00e5ff,#00ff88);transition:width .95s linear;}
 .bb-tfill.urg{background:linear-gradient(90deg,#ff3366,#ff6b35);}
 
-/* SOLD screen */
+
+/* ═══ DUST FLY ANIMATION ═══ */
+#dustContainer{
+  position:absolute;inset:0;pointer-events:none;z-index:100;overflow:hidden;
+}
+.dust-particle{
+  position:absolute;
+  border-radius:50%;
+  pointer-events:none;
+  opacity:0;
+}
+/* Flying photo clone */
+#flyingPhoto{
+  position:absolute;
+  pointer-events:none;
+  z-index:150;
+  opacity:0;
+  border-radius:50% 50% 0 0 / 40% 40% 0 0;
+  object-fit:cover;
+  object-position:top center;
+  border:3px solid rgba(255,215,0,.6);
+  box-shadow:0 0 30px rgba(255,215,0,.4);
+  transition:none;
+}
+@keyframes dustFade{
+  0%{opacity:1;transform:translate(0,0) scale(1);}
+  60%{opacity:.7;transform:translate(var(--dx),var(--dy)) scale(.3);}
+  100%{opacity:0;transform:translate(var(--dx2),var(--dy2)) scale(0);}
+}
+@keyframes particleFly{
+  0%{opacity:.9;transform:translate(0,0) scale(1);}
+  100%{opacity:0;transform:translate(var(--px),var(--py)) scale(0);}
+}
+@keyframes teamFlash{
+  0%{box-shadow:0 0 0 rgba(255,215,0,0);}
+  30%{box-shadow:0 0 40px rgba(255,215,0,.8),0 0 80px rgba(255,215,0,.4);}
+  100%{box-shadow:0 0 0 rgba(255,215,0,0);}
+}
+.team-flash{animation:teamFlash .8s ease-out forwards;}
+
+/* SOLD */
 #sold{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
 #sold.v{opacity:1;}
 .scrd{background:linear-gradient(135deg,rgba(5,10,30,.99),rgba(2,5,18,1));border:2px solid rgba(255,215,0,.6);border-radius:36px;padding:56px 90px;text-align:center;box-shadow:0 0 140px rgba(255,215,0,.15);animation:ci .5s cubic-bezier(.34,1.56,.64,1);}
@@ -308,17 +212,9 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;}
 <div id="bottomBar">
   <div class="bb-fade"></div>
   <div class="bb-bar"></div>
-
-  <div class="bb-left">
-    <div class="bb-scroll-l" id="bbTickerL">🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp;</div>
-  </div>
-
-  <div class="bb-right">
-    <div class="bb-scroll-r" id="bbTickerR">🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp;</div>
-  </div>
-
+  <div class="bb-left"><div class="bb-scroll-l" id="bbTickerL">🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp;</div></div>
+  <div class="bb-right"><div class="bb-scroll-r" id="bbTickerR">🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp; 🏏 AUCTION LIVE &nbsp;</div></div>
   <div id="bbPhoto"></div>
-
   <div class="bb-center">
     <div id="bbTeamLogo"></div>
     <div class="bb-txt">
@@ -330,9 +226,11 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;}
       <div class="bb-plbl" id="bbPriceLbl">BASE PRICE</div>
     </div>
   </div>
-
   <div class="bb-tbar"><div class="bb-tfill" id="bbTimerFill" style="width:100%"></div></div>
 </div>
+
+<div id="dustContainer"></div>
+<img id="flyingPhoto" src="" width="170" height="260">
 
 <div id="sold"><div class="scrd"><span class="hm">🔨</span><div class="stxt">SOLD!</div><div class="spnm" id="sPnm"></div><div class="sarr">▼</div><div class="stnm" id="sTnm"></div><div class="spr" id="sPr"></div></div></div>
 <div id="unsold"><div class="ucrd"><div class="utxt">UNSOLD</div><div class="upnm" id="uPnm"></div></div></div>
@@ -347,6 +245,96 @@ const INTRO_SEC=10;
 
 function show(id){document.getElementById(id).classList.add('v');}
 function hide(id){document.getElementById(id).classList.remove('v');}
+
+
+// ═══ DUST FLY EFFECT ═══
+function playDustFlyEffect(playerImg, soldTeamId){
+  const photo = document.getElementById('bbPhoto');
+  const flyImg = document.getElementById('flyingPhoto');
+  const dustCont = document.getElementById('dustContainer');
+  if(!photo || !flyImg) return;
+
+  // Get player photo position (center of #bbPhoto)
+  const photoRect = photo.getBoundingClientRect();
+  const startX = photoRect.left + photoRect.width/2;
+  const startY = photoRect.top + photoRect.height/2;
+
+  // Get target team row position (right panel)
+  const teamRow = document.getElementById('trow-'+soldTeamId);
+  let endX = 1600, endY = 400; // default right side
+  if(teamRow){
+    const tr = teamRow.getBoundingClientRect();
+    endX = tr.left + tr.width/2;
+    endY = tr.top + tr.height/2;
+  }
+
+  // Setup flying photo clone
+  flyImg.src = playerImg || '';
+  flyImg.style.cssText = `
+    position:absolute;
+    left:${startX - 85}px;
+    top:${startY - 130}px;
+    width:170px;height:260px;
+    opacity:1;
+    z-index:150;
+    border-radius:50% 50% 0 0 / 40% 40% 0 0;
+    object-fit:cover;
+    object-position:top center;
+    border:3px solid rgba(255,215,0,.6);
+    box-shadow:0 0 30px rgba(255,215,0,.4);
+    transition:none;
+  `;
+
+  // Create dust particles
+  const colors = ['#ffd700','#ff8c00','#ffcc44','#fff3b0','#00e5ff','#ffffff'];
+  for(let i=0;i<28;i++){
+    const p=document.createElement('div');
+    p.className='dust-particle';
+    const sz=Math.random()*18+6;
+    const angle=Math.random()*360;
+    const dist=Math.random()*200+80;
+    const px=Math.cos(angle*Math.PI/180)*dist;
+    const py=Math.sin(angle*Math.PI/180)*dist-100;
+    const col=colors[Math.floor(Math.random()*colors.length)];
+    const delay=Math.random()*0.3;
+    const dur=Math.random()*0.8+0.5;
+    p.style.cssText=`
+      left:${startX + (Math.random()-0.5)*60}px;
+      top:${startY + (Math.random()-0.5)*60}px;
+      width:${sz}px;height:${sz}px;
+      background:${col};
+      box-shadow:0 0 ${sz}px ${col};
+      --px:${px}px;--py:${py}px;
+      animation:particleFly ${dur}s ease-out ${delay}s forwards;
+    `;
+    dustCont.appendChild(p);
+    setTimeout(()=>p.remove(), (dur+delay)*1000+100);
+  }
+
+  // Animate flying photo to team panel
+  setTimeout(()=>{
+    const dx = endX - startX;
+    const dy = endY - startY;
+    flyImg.style.transition = 'all 1.2s cubic-bezier(.4,0,.2,1)';
+    flyImg.style.transform = `translate(${dx}px,${dy}px) scale(.15)`;
+    flyImg.style.opacity = '0';
+    flyImg.style.borderRadius = '50%';
+    flyImg.style.filter = 'blur(3px)';
+  }, 200);
+
+  // Flash the team row
+  setTimeout(()=>{
+    if(teamRow) teamRow.classList.add('team-flash');
+    setTimeout(()=>{if(teamRow)teamRow.classList.remove('team-flash');},900);
+  }, 1300);
+
+  // Reset
+  setTimeout(()=>{
+    flyImg.style.cssText='position:absolute;opacity:0;pointer-events:none;';
+    flyImg.style.transform='';
+    dustCont.innerHTML='';
+  }, 2000);
+}
 
 async function poll(){
   try{
@@ -375,18 +363,23 @@ function handle(prev,cur){
         timer,timerDuration,lastSoldPlayer,lastSoldTeam,lastSoldPrice,isReAuction}=cur;
 
   if(status==='sold'&&prev.status!=='sold'){
-    clearTimeout(introTO);
-    hide('introCard');hide('bottomBar');hide('teamPanel');hide('topBar');hide('idle');
-    show('sold');
+    // Play dust fly effect BEFORE hiding bottom bar
+    const soldP = OS.players[prev.currentPlayerId||cur.currentPlayerId];
+    const soldTId = prev.currentBidder||cur.currentBidder;
+    if(soldP && soldP.img) playDustFlyEffect(soldP.img, soldTId);
+    setTimeout(()=>{
+      clearTimeout(introTO);
+      hide('introCard');hide('bottomBar');hide('teamPanel');hide('topBar');hide('idle');
+      show('sold');
+    }, 1400); // delay so dust animation plays first
     document.getElementById('sPnm').textContent=(lastSoldPlayer||'').toUpperCase();
     document.getElementById('sTnm').textContent=(lastSoldTeam||'').toUpperCase();
     document.getElementById('sPr').textContent=fmt(lastSoldPrice);
-    // Set tickers to SOLD
-    const soldTxt='SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; SOLD &nbsp; ';
-    const tl2=document.getElementById('bbTickerL');
-    const tr2=document.getElementById('bbTickerR');
-    if(tl2) tl2.textContent=soldTxt;
-    if(tr2) tr2.textContent=soldTxt;
+    const soldTxt='SOLD \u00a0 SOLD \u00a0 SOLD \u00a0 SOLD \u00a0 SOLD \u00a0 SOLD \u00a0 SOLD \u00a0 SOLD \u00a0 ';
+    const tl=document.getElementById('bbTickerL');
+    const tr=document.getElementById('bbTickerR');
+    if(tl)tl.textContent=soldTxt;
+    if(tr)tr.textContent=soldTxt;
     clearTimeout(soldTO);
     soldTO=setTimeout(()=>{hide('sold');show('idle');},5000);
     return;
@@ -456,37 +449,19 @@ function updateBottomBar(p,cur){
   const{currentBid,currentBidder,currentBidderName,timer,timerDuration}=cur;
   const bid=currentBid||p.basePrice;
 
-  // Player photo
   document.getElementById('bbPhoto').innerHTML=p.img
     ?'<img src="'+p.img+'" onerror="this.style.display=\'none\'">'
     :'<div class="ph">👤</div>';
 
-  // Team logo
   const team=currentBidder?OS.teams[currentBidder]:null;
   const lw=document.getElementById('bbTeamLogo');
   if(team&&team.logo)lw.innerHTML='<img src="'+team.logo+'" class="bb-tlogo">';
   else if(team)lw.innerHTML='<div class="bb-tlogo-ph" style="background:'+team.color+'22">🏆</div>';
   else lw.innerHTML='<div class="bb-tlogo-ph">🏏</div>';
 
-  // Name + team
   document.getElementById('bbName').textContent=(p.name||'').toUpperCase();
-  document.getElementById('bbTeam').textContent=currentBidderName?'LEADING: '+currentBidderName.toUpperCase():'NO BIDS YET';
+  document.getElementById('bbTeam').textContent=currentBidderName?'SOLD TO: '+currentBidderName.toUpperCase():'NO BIDS YET';
 
-  // Tickers — bidding = bidder info, no bid = BIDDING LIVE
-  const tl=document.getElementById('bbTickerL');
-  const tr=document.getElementById('bbTickerR');
-  if(currentBidderName){
-    const t1='🔥 '+currentBidderName.toUpperCase()+' LEADS &nbsp;·&nbsp; ';
-    const bidTxt=(t1).repeat(6);
-    if(tl){tl.innerHTML=bidTxt;tl.style.color='rgba(255,180,0,.85)';}
-    if(tr){tr.innerHTML=bidTxt;tr.style.color='rgba(255,180,0,.85)';}
-  } else {
-    const liveTxt='🏏 BIDDING LIVE &nbsp;·&nbsp; '.repeat(6);
-    if(tl){tl.innerHTML=liveTxt;tl.style.color='rgba(255,130,0,.8)';}
-    if(tr){tr.innerHTML=liveTxt;tr.style.color='rgba(0,220,80,.8)';}
-  }
-
-  // Price
   const pe=document.getElementById('bbPrice');
   const pn=document.getElementById('bbPriceNum');
   if(bid!==prevBid){pe.classList.remove('pop');void pe.offsetWidth;pe.classList.add('pop');}
@@ -494,16 +469,25 @@ function updateBottomBar(p,cur){
   document.getElementById('bbPriceLbl').textContent=currentBidderName?'LEADING BID':'BASE PRICE';
   prevBid=bid;
 
-  // Timer
-  const t=timer||0,tot=timerDuration||30;
+  const tl=document.getElementById('bbTickerL');
+  const tr=document.getElementById('bbTickerR');
+  if(currentBidderName){
+    const t='🔥 '+currentBidderName.toUpperCase()+' \u2014 '+fmt(bid)+' \u00a0\u00a0 🔥 '+currentBidderName.toUpperCase()+' \u2014 '+fmt(bid)+' \u00a0\u00a0 🔥 '+currentBidderName.toUpperCase()+' \u2014 '+fmt(bid)+' \u00a0\u00a0 ';
+    if(tl)tl.innerHTML=t;if(tr)tr.innerHTML=t;
+  } else {
+    const t='🏏 AUCTION LIVE \u00a0 🏏 AUCTION LIVE \u00a0 🏏 AUCTION LIVE \u00a0 🏏 AUCTION LIVE \u00a0 ';
+    if(tl)tl.innerHTML=t;if(tr)tr.innerHTML=t;
+  }
+
+  const tm=timer||0,tot=timerDuration||30;
   const tf=document.getElementById('bbTimerFill');
-  tf.style.width=Math.max(0,(t/tot)*100)+'%';
-  tf.className='bb-tfill'+(t<=5?' urg':'');
+  tf.style.width=Math.max(0,(tm/tot)*100)+'%';
+  tf.className='bb-tfill'+(tm<=5?' urg':'');
 }
 
 function renderTeams(leadId){
   document.getElementById('tpList').innerHTML=Object.entries(OS.teams).map(([id,t])=>
-    '<div class="trow '+(id===leadId?'lead':'')+'" style="border-left-color:'+(t.color||'#00e5ff')+'">'+
+    '<div class="trow '+(id===leadId?'lead':'')+'" id="trow-'+id+'" style="border-left-color:'+(t.color||'#00e5ff')+'">'+
       (id===leadId?'<div class="lbdg">LEADING</div>':'')+
       '<div class="trow-left">'+
         (t.logo?'<img src="'+t.logo+'" style="width:34px;height:34px;border-radius:7px;object-fit:cover;flex-shrink:0">':'<div style="width:4px;height:36px;border-radius:2px;background:'+(t.color||'#00e5ff')+';flex-shrink:0"></div>')+

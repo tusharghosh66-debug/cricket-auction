@@ -232,6 +232,22 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;}
 <div id="dustContainer"></div>
 <img id="flyingPhoto" src="" width="170" height="260">
 
+<!-- LOTTERY WINNER OVERLAY -->
+<div id="lotteryOverlay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;z-index:50;">
+  <div style="background:linear-gradient(135deg,rgba(60,0,180,.97),rgba(20,0,80,.99));border:3px solid rgba(180,100,255,.7);border-radius:36px;padding:56px 80px;text-align:center;box-shadow:0 0 120px rgba(123,47,247,.4);animation:ci .5s cubic-bezier(.34,1.56,.64,1);">
+    <div style="font-size:60px;margin-bottom:12px;animation:hs .6s ease-out">🎲</div>
+    <div style="font-family:'Bebas Neue';font-size:60px;color:rgba(255,255,255,.6);letter-spacing:6px;margin-bottom:8px">LOTTERY WINNER</div>
+    <div style="font-family:'Bebas Neue';font-size:130px;color:#ffd700;letter-spacing:8px;line-height:1;text-shadow:0 0 60px rgba(255,215,0,.6)" id="lotteryWinnerName">-</div>
+    <div style="font-size:22px;color:rgba(255,255,255,.5);margin-top:12px;letter-spacing:2px">WINS THE PLAYER</div>
+  </div>
+</div>
+
+<div id="lotteryWinnerOverlay">
+  <div class="lwo-title">🎲 Lottery Winner</div>
+  <div class="lwo-name" id="lwoName">-</div>
+  <div class="lwo-sub">wins this player!</div>
+</div>
+
 <div id="sold"><div class="scrd"><span class="hm">🔨</span><div class="stxt">SOLD!</div><div class="spnm" id="sPnm"></div><div class="sarr">▼</div><div class="stnm" id="sTnm"></div><div class="spr" id="sPr"></div></div></div>
 <div id="unsold"><div class="ucrd"><div class="utxt">UNSOLD</div><div class="upnm" id="uPnm"></div></div></div>
 
@@ -378,7 +394,13 @@ async function poll(){
 
 function handle(prev,cur){
   const{status,currentPlayerId,currentBid,currentBidder,currentBidderName,
-        timer,timerDuration,lastSoldPlayer,lastSoldTeam,lastSoldPrice,isReAuction}=cur;
+        timer,timerDuration,lastSoldPlayer,lastSoldTeam,lastSoldPrice,isReAuction,
+        lotteryWinner,lotteryWinnerName,lotteryWinnerColor}=cur;
+
+  // LOTTERY event — show winner overlay briefly
+  if(status==='lottery'&&prev.status!=='lottery'&&lotteryWinner){
+    showLotteryOverlay(lotteryWinnerName,lotteryWinnerColor,OS.teams[lotteryWinner]);
+  }
 
   if(status==='sold'&&prev.status!=='sold'){
     // Play dust fly effect BEFORE hiding bottom bar
@@ -405,6 +427,9 @@ function handle(prev,cur){
   if(status==='unsold'&&prev.status!=='unsold'){
     clearTimeout(introTO);
     hide('introCard');hide('bottomBar');hide('teamPanel');hide('topBar');hide('idle');
+    // Clear photo to prevent glitch
+    const ph=document.getElementById('bbPhoto');
+    if(ph) ph.innerHTML='';
     show('unsold');
     const p=OS.players[currentPlayerId];
     document.getElementById('uPnm').textContent=(p?.name||'').toUpperCase();
@@ -416,12 +441,16 @@ function handle(prev,cur){
 
   if(!currentPlayerId){
     clearTimeout(introTO);introShowing=false;
+    // Clear photo to prevent glitch
+    const bbp=document.getElementById('bbPhoto');
+    if(bbp) bbp.innerHTML='';
     hide('introCard');hide('bottomBar');hide('teamPanel');hide('topBar');
-    // waiting = admin started but no player yet — show idle with "STARTING SOON"
     if(status==='waiting'){
       document.getElementById('idleTitle').textContent=OS.tourName||'CRICKET AUCTION';
       const sub=document.querySelector('.idle-sub');
       if(sub) sub.textContent='AUCTION STARTING SOON...';
+    } else if(status==='unsold'){
+      // Show unsold screen briefly
     } else {
       const sub=document.querySelector('.idle-sub');
       if(sub) sub.textContent='LIVE PLAYER AUCTION';
@@ -431,6 +460,11 @@ function handle(prev,cur){
 
   hide('idle');show('topBar');show('teamPanel');
   const p=OS.players[currentPlayerId];if(!p)return;
+  
+  // Show lottery winner overlay if set
+  if(cur.lotteryWinner && cur.lotteryWinnerName && cur.lotteryWinner!==prev.lotteryWinner){
+    showLotteryWinner(cur.lotteryWinnerName, cur.lotteryWinner);
+  }
 
   const isNew=prev.currentPlayerId!==currentPlayerId;
   if(isNew){
@@ -533,6 +567,29 @@ function updStats(){
 }
 
 function fmtNum(n){if(!n&&n!==0)return'0';return Number(n).toLocaleString('en-IN');}
+function showLotteryOverlay(name,color,team){
+  const el=document.getElementById('lotteryOverlay');
+  const nm=document.getElementById('lotteryWinnerName');
+  if(!el||!nm)return;
+  nm.textContent=(name||'').toUpperCase();
+  if(color) nm.style.color=color;
+  el.style.opacity='1';
+  // Auto hide after 5s
+  setTimeout(()=>{el.style.opacity='0';},5000);
+}
+
+function showLotteryWinner(name, teamId){
+  const el=document.getElementById('lotteryWinnerOverlay');
+  const nm=document.getElementById('lwoName');
+  if(!el||!nm)return;
+  nm.textContent=(name||'').toUpperCase();
+  // Team color border
+  const team=OS.teams[teamId];
+  if(team&&team.color) el.style.borderColor=team.color;
+  el.classList.add('v');
+  setTimeout(()=>el.classList.remove('v'),5000);
+}
+
 function fmt(n){if(!n&&n!==0)return'₹0';return'₹'+Number(n).toLocaleString('en-IN');}
 
 setTimeout(()=>show('idle'),400);

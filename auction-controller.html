@@ -219,7 +219,7 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
 
     <!-- Place Bid -->
     <div style="padding:0 14px 10px">
-      <button class="btn bp" onclick="placeBid()">⚡ PLACE BID</button>
+      <button class="btn bp" id="placeBidBtn" onclick="placeBid()">⚡ PLACE BID</button>
     </div>
 
     <!-- Sold / Unsold -->
@@ -562,15 +562,23 @@ async function doSelectPlayer(pid){
   }
   await fb.patch(`tours/${S.activeTourId}/players/${pid}`,{status:'active'});
   await fb.set('auction',{status:'idle',currentPlayerId:pid,currentBid:p.basePrice||S.settings.defaultBasePrice||5000,currentBidder:null,currentBidderName:null,timer:dur,timerDuration:dur,tourId:S.activeTourId,isReAuction:p.status==='unsold'});
+  // Reset place bid button
+  const pbb=document.getElementById('placeBidBtn');
+  if(pbb){pbb.disabled=false;pbb.textContent='⚡ PLACE BID';pbb.style.background='';}
+  // Hide lottery button
+  const lw2=document.getElementById('lotteryBtnWrap');
+  if(lw2) lw2.style.display='none';
 }
 
 // Bid amount: tap once = set to currentBid + increment (NOT cumulative)
 function addInc(a){
   const p=S.players[S.auction.currentPlayerId];if(!p)return;
   const base=S.auction.currentBid||(p.basePrice||S.settings.defaultBasePrice||5000);
+  const cap=S.settings.lotteryAmount||0;
   selBid=base+a;
+  // Cap at lottery amount if set
+  if(cap>0 && selBid>cap) selBid=cap;
   document.getElementById('bidAmountEl').textContent=fmt(selBid);
-  // Highlight active button
   document.querySelectorAll('#incGrid .inc-btn').forEach(b=>b.classList.remove('active'));
   event.target.classList.add('active');
 }
@@ -610,10 +618,22 @@ async function placeBid(){
   const base=p.basePrice||S.settings.defaultBasePrice||5000;
   const curBid=S.auction.currentBid||base;
   const hasBidder=!!S.auction.currentBidder;
-  // If selBid not set properly, default to base price
   if(!selBid||selBid<base) selBid=base;
   if(hasBidder && selBid<=curBid){toast('Bid must be higher than '+fmt(curBid)+'!');return;}
   if(selBid>t.currentBudget){toast(t.name+' budget: '+fmt(t.currentBudget));return;}
+  // Block if lottery amount reached
+  const lotteryTrig=S.settings.lotteryAmount||0;
+  if(lotteryTrig>0 && selBid>lotteryTrig){
+    toast('Lottery amount reached! Run 🎲 Lottery instead.');return;
+  }
+  // BID CAP: block if lottery amount set and bid exceeds it
+  const lotteryAmt=S.settings.lotteryAmount||0;
+  if(lotteryAmt>0 && selBid>lotteryAmt){
+    toast('Max bid is '+fmt(lotteryAmt)+' (Lottery limit)!');
+    selBid=lotteryAmt;
+    document.getElementById('bidAmountEl').textContent=fmt(selBid);
+    return;
+  }
   const dur=S.settings.timerDuration||30;
   await fb.patch('auction',{currentBid:selBid,currentBidder:selTeam,currentBidderName:t.name,timer:useTimer?dur:999,status:'active'});
   if(useTimer) startLocalTimer();
@@ -644,7 +664,8 @@ async function unsoldPlayer(){
   const pid=S.auction.currentPlayerId;if(!pid)return;
   clearInterval(timerInt);
   await fb.patch(`tours/${S.activeTourId}/players/${pid}`,{status:'unsold'});
-  await fb.set('auction',{status:'unsold',currentPlayerId:pid,currentBid:0,currentBidder:null,currentBidderName:null,timer:S.settings.timerDuration||30,timerDuration:S.settings.timerDuration||30,tourId:S.activeTourId});
+  // Set unsold with null currentPlayerId so OBS clears photo
+  await fb.set('auction',{status:'unsold',currentPlayerId:null,lastUnsoldPlayer:S.players[pid]?.name||'',currentBid:0,currentBidder:null,currentBidderName:null,timer:S.settings.timerDuration||30,timerDuration:S.settings.timerDuration||30,tourId:S.activeTourId});
   toast('Marked unsold');
   // Auto next player after 2.5s
   setTimeout(()=>autoNextPlayer(), 2500);
@@ -683,14 +704,22 @@ async function resetUnsold(){
 function checkLotteryTrigger(bidAmount){
   const trigger=S.settings.lotteryAmount||0;
   if(!trigger||trigger<=0) return;
-  if(bidAmount>=trigger && lotteryBidders.length>=2){
+  if(bidAmount>=trigger && lotteryBidders.length>=1){
     const lw=document.getElementById('lotteryBtnWrap');
     if(lw) lw.style.display='block';
   }
 }
 
 async function runLottery(){
-  if(lotteryBidders.length<1){toast('No bidders!');return;}
+  if(lotteryBidders.length<1){
+    // If no bidders yet, use all teams
+    if(Object.keys(S.teams).length>0){
+      lotteryBidders=Object.keys(S.teams);
+      toast('No bids yet — all teams in lottery!');
+    } else {
+      toast('No teams!');return;
+    }
+  }
   
   // Fair lottery: exclude last winner if possible
   let pool=[...lotteryBidders];
@@ -758,7 +787,7 @@ async function runLottery(){
         toast('🎲 Lottery: '+winner?.name+' wins!');
         
         // Push to Firebase so OBS can show
-        fb.patch('auction',{lotteryWinner:winnerId,lotteryWinnerName:winner?.name||''});
+        fb.patch('auction',{lotteryWinner:winnerId,lotteryWinnerName:winner?.name||'',lotteryWinnerColor:winner?.color||'#ffd700',status:'lottery'});
       },300);
     }
   },80);
@@ -766,6 +795,7 @@ async function runLottery(){
 
 function closeLottery(){
   document.getElementById('lotteryModal').style.display='none';
+  fb.patch('auction',{lotteryWinner:null,lotteryWinnerName:null,status:'active'});
   // Hide lottery button after use
   const lw=document.getElementById('lotteryBtnWrap');
   if(lw) lw.style.display='none';

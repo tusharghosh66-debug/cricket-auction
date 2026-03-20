@@ -399,6 +399,15 @@ function handle(prev,cur){
   if(!currentPlayerId){
     clearTimeout(introTO);introShowing=false;
     hide('introCard');hide('bottomBar');hide('teamPanel');hide('topBar');
+    // waiting = admin started but no player yet — show idle with "STARTING SOON"
+    if(status==='waiting'){
+      document.getElementById('idleTitle').textContent=OS.tourName||'CRICKET AUCTION';
+      const sub=document.querySelector('.idle-sub');
+      if(sub) sub.textContent='AUCTION STARTING SOON...';
+    } else {
+      const sub=document.querySelector('.idle-sub');
+      if(sub) sub.textContent='LIVE PLAYER AUCTION';
+    }
     show('idle');return;
   }
 

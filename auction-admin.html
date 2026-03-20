@@ -323,6 +323,11 @@ function doUnlock(){
         <div class="ig"><label>Timer (seconds)</label><input type="number" id="setTimer" value="30"></div>
         <div class="ig"><label>Default Base Price (₹)</label><input type="number" id="setBase" value="5000"></div>
         <div class="ig"><label>Default Budget (₹)</label><input type="number" id="setBudget" value="500000"></div>
+        <div class="ig">
+          <label>Lottery Trigger Amount (₹)</label>
+          <input type="number" id="setLottery" value="0" placeholder="0 = lottery off">
+          <div style="font-size:10px;color:#444;margin-top:4px">এই amount এ পৌঁছালে bidder দের মধ্যে lottery হবে। 0 = বন্ধ।</div>
+        </div>
         <button class="btn bs" onclick="saveTourSettings()">Save Settings</button>
       </div>
     </div>
@@ -439,6 +444,7 @@ function loadTour(tid){
     document.getElementById('setTimer').value = d.timerDuration||30;
     document.getElementById('setBase').value = d.defaultBasePrice||5000;
     document.getElementById('setBudget').value = d.defaultBudget||500000;
+    document.getElementById('setLottery').value = d.lotteryAmount||0;
     const t = tournaments[activeTourId];
     if(t) document.getElementById('tourSettingsTitle').textContent = t.name+' Settings';
   });
@@ -948,7 +954,13 @@ function fallbackCopy(text){
 // ══════════════════════════════
 async function saveTourSettings(){
   if(!activeTourId){toast('No active tournament!');return;}
-  const s={timerDuration:parseInt(document.getElementById('setTimer').value)||30,defaultBasePrice:parseInt(document.getElementById('setBase').value)||5000,defaultBudget:parseInt(document.getElementById('setBudget').value)||500000,tournamentName:tournaments[activeTourId]?.name||''};
+  const s={
+    timerDuration:parseInt(document.getElementById('setTimer').value)||30,
+    defaultBasePrice:parseInt(document.getElementById('setBase').value)||5000,
+    defaultBudget:parseInt(document.getElementById('setBudget').value)||500000,
+    lotteryAmount:parseInt(document.getElementById('setLottery').value)||0,
+    tournamentName:tournaments[activeTourId]?.name||''
+  };
   settings=s;
   await fb.set('tours/'+activeTourId+'/settings',s);
   await fb.patch('auction',{timerDuration:s.timerDuration});

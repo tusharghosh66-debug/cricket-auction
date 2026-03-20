@@ -227,6 +227,10 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
       <button class="btn bg" id="soldBtn" onclick="soldPlayer()" disabled>🔨 SOLD!</button>
       <button class="btn bgr" onclick="unsoldPlayer()">✕ UNSOLD</button>
     </div>
+    <!-- Lottery button — shows when lottery amount reached -->
+    <div style="padding:0 14px 8px;display:none" id="lotteryBtnWrap">
+      <button class="btn" id="lotteryBtn" onclick="runLottery()" style="background:linear-gradient(135deg,#7b2ff7,#4a00e0);color:#fff;font-size:15px;padding:14px;letter-spacing:1px">🎲 RUN LOTTERY</button>
+    </div>
     <div style="padding:0 14px 10px">
       <button class="btn bd bsm" onclick="completeAuction()" style="opacity:.6">⏹ Complete Auction</button>
     </div>
@@ -280,6 +284,30 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
       <button class="btn bs" onclick="saveCtrlSettings()">💾 Save Timer</button>
     </div>
 
+    <!-- LOTTERY SETTINGS -->
+    <div style="background:linear-gradient(135deg,rgba(123,47,247,.1),rgba(74,0,224,.08));border:1px solid rgba(123,47,247,.3);border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">🎲 Lottery Mode</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:12px">নির্দিষ্ট amount এ পৌঁছালে bidding team দের মধ্যে lottery হবে</div>
+
+      <!-- Toggle -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-size:13px;color:#ddd;font-weight:600">Lottery</span>
+        <button id="lotteryToggleBtn" onclick="toggleLottery()" style="padding:7px 16px;border:none;border-radius:20px;font-family:Inter,sans-serif;font-size:12px;font-weight:700;cursor:pointer;background:rgba(123,47,247,.2);color:#a78bfa;border:1px solid rgba(123,47,247,.3)">OFF</button>
+      </div>
+
+      <!-- Amount input -->
+      <div id="lotteryAmountWrap" style="display:none">
+        <div style="margin-bottom:8px">
+          <label style="font-size:10px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px">Trigger Amount (₹)</label>
+          <input type="number" id="lotteryAmountInput" placeholder="e.g. 5000" style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(123,47,247,.3);border-radius:9px;padding:10px 12px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;outline:none">
+          <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px">এই amount বা তার বেশি bid হলে 🎲 RUN LOTTERY button আসবে</div>
+        </div>
+        <button class="btn" onclick="saveLotterySettings()" style="background:linear-gradient(135deg,#7b2ff7,#4a00e0);color:#fff;padding:10px;font-size:13px">💾 Save Lottery Amount</button>
+      </div>
+
+      <div id="lotteryStatusTxt" style="font-size:11px;color:rgba(255,255,255,.3);margin-top:8px"></div>
+    </div>
+
     <div style="background:var(--c);border:1px solid var(--b);border-radius:12px;padding:14px;">
       <div style="font-size:11px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Quick Actions</div>
       <div class="b2">
@@ -287,6 +315,19 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
         <button class="btn bgr bsm" onclick="clearAuction()">🗑 Reset Auction</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- LOTTERY MODAL -->
+<div id="lotteryModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:500;display:none;align-items:center;justify-content:center;">
+  <div style="background:linear-gradient(135deg,#1a0050,#0d0030);border:2px solid rgba(123,47,247,.6);border-radius:24px;padding:36px 32px;width:340px;text-align:center;box-shadow:0 0 80px rgba(123,47,247,.3)">
+    <div style="font-size:48px;margin-bottom:8px" id="lotterySpinIcon">🎲</div>
+    <div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;margin-bottom:6px" id="lotteryTitle">LOTTERY</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:20px" id="lotterySubtitle">Drawing winner...</div>
+    <div id="lotteryContent"></div>
+    <button id="lotteryCloseBtn" onclick="closeLottery()" style="display:none;width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,#7b2ff7,#4a00e0);color:#fff;font-family:Inter,sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:16px">
+      ✓ OK
+    </button>
   </div>
 </div>
 
@@ -307,7 +348,9 @@ const fb={
   async del(p){try{await fetch(`${DB}/${p}.json`,{method:'DELETE'});}catch{}}
 };
 
-let S={players:{},teams:{},auction:{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,timer:30,timerDuration:30},settings:{timerDuration:30,defaultBasePrice:5000,bidIncrements:[500,1000,2000,5000,10000,25000,50000]},activeTourId:null};
+let S={players:{},teams:{},auction:{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,timer:30,timerDuration:30},settings:{timerDuration:30,defaultBasePrice:5000,bidIncrements:[500,1000,2000,5000,10000,25000,50000],lotteryAmount:0},activeTourId:null};
+let lotteryBidders=[]; // teams that have bid on current player
+let lastLotteryWinner=null; // last lottery winner to avoid repeat
 let selBid=0,selTeam=null,timerInt=null,pickFilter='available',useTimer=true;
 
 // ═══ INIT ═══
@@ -339,7 +382,7 @@ let selBid=0,selTeam=null,timerInt=null,pickFilter='available',useTimer=true;
 function loadTournamentData(tid){
   pollPath(`tours/${tid}/players`,d=>{S.players=d||{};renderAuction();renderPickList();updateStatsBar();renderCtrlTeams();checkValidation();},1000);
   pollPath(`tours/${tid}/teams`,d=>{S.teams=d||{};renderTeamBidGrid();renderCtrlTeams();},1500);
-  pollPath(`tours/${tid}/settings`,d=>{if(!d)return;S.settings=d;document.getElementById('ctrlTimer').value=d.timerDuration||30;renderIncGrid();},3000);
+  pollPath(`tours/${tid}/settings`,d=>{if(!d)return;S.settings={...S.settings,...d};document.getElementById('ctrlTimer').value=d.timerDuration||30;renderIncGrid();updateLotteryUI();},3000);
   setConn(true);
   setTimeout(async()=>{
     const cur=await fb.get('auction');
@@ -462,6 +505,10 @@ async function doSelectPlayer(pid){
   if(!p)return;
   selBid=p.basePrice||S.settings.defaultBasePrice||5000;
   selTeam=null;
+  lotteryBidders=[]; // reset bidders for new player
+  // hide lottery button
+  const lw=document.getElementById('lotteryBtnWrap');
+  if(lw) lw.style.display='none';
   clearInterval(timerInt);
   const dur=parseInt(document.getElementById('ctrlTimer').value)||30;
   // Deactivate previous
@@ -475,7 +522,7 @@ async function doSelectPlayer(pid){
 // Bid amount: tap once = set to currentBid + increment (NOT cumulative)
 function addInc(a){
   const p=S.players[S.auction.currentPlayerId];if(!p)return;
-  const base=S.auction.currentBid||p.basePrice||0;
+  const base=S.auction.currentBid||(p.basePrice||S.settings.defaultBasePrice||5000);
   selBid=base+a;
   document.getElementById('bidAmountEl').textContent=fmt(selBid);
   // Highlight active button
@@ -526,6 +573,9 @@ async function placeBid(){
   await fb.patch('auction',{currentBid:selBid,currentBidder:selTeam,currentBidderName:t.name,timer:useTimer?dur:999,status:'active'});
   if(useTimer) startLocalTimer();
   document.querySelectorAll('#incGrid .inc-btn').forEach(b=>b.classList.remove('active'));
+  // Track this team as a bidder for lottery
+  if(!lotteryBidders.includes(selTeam)) lotteryBidders.push(selTeam);
+  checkLotteryTrigger(selBid);
   toast(t.name+' → '+fmt(selBid));
 }
 
@@ -537,7 +587,8 @@ async function soldPlayer(){
   const team=S.teams[tid],player=S.players[pid];
   await fb.patch(`tours/${S.activeTourId}/players/${pid}`,{status:'sold',soldTo:tid,soldToName:team.name,soldPrice:amt});
   const cp=Array.isArray(team.players)?[...team.players]:[];
-  await fb.patch(`tours/${S.activeTourId}/teams/${tid}`,{currentBudget:(team.currentBudget||0)-amt,players:[...cp,pid]});
+  const newBudget=Math.max(0,(team.currentBudget||team.initialBudget||0)-amt);
+  await fb.patch(`tours/${S.activeTourId}/teams/${tid}`,{currentBudget:newBudget,players:[...cp,pid]});
   await fb.patch('auction',{status:'sold',lastSoldPlayer:player.name,lastSoldTeam:team.name,lastSoldPrice:amt});
   toast('SOLD! '+player.name+' → '+team.name);
   // Auto next player after 3.5s
@@ -582,6 +633,99 @@ async function resetUnsold(){
   toast(unsold.length+' players re-queued!');
 }
 
+
+// ═══ LOTTERY ═══
+function checkLotteryTrigger(bidAmount){
+  const trigger=S.settings.lotteryAmount||0;
+  if(!trigger||trigger<=0) return;
+  if(bidAmount>=trigger && lotteryBidders.length>=2){
+    const lw=document.getElementById('lotteryBtnWrap');
+    if(lw) lw.style.display='block';
+  }
+}
+
+async function runLottery(){
+  if(lotteryBidders.length<1){toast('No bidders!');return;}
+  
+  // Fair lottery: exclude last winner if possible
+  let pool=[...lotteryBidders];
+  if(lastLotteryWinner && pool.length>1){
+    pool=pool.filter(id=>id!==lastLotteryWinner);
+  }
+  
+  // Animate spin
+  const modal=document.getElementById('lotteryModal');
+  const icon=document.getElementById('lotterySpinIcon');
+  const title=document.getElementById('lotteryTitle');
+  const sub=document.getElementById('lotterySubtitle');
+  const content=document.getElementById('lotteryContent');
+  const closeBtn=document.getElementById('lotteryCloseBtn');
+  
+  modal.style.display='flex';
+  closeBtn.style.display='none';
+  title.textContent='LOTTERY';
+  sub.textContent='Drawing winner...';
+  icon.textContent='🎲';
+  
+  // Show all bidders
+  content.innerHTML='<div style="margin-bottom:16px">'+
+    '<div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:8px;letter-spacing:1px">PARTICIPANTS</div>'+
+    lotteryBidders.map(id=>{
+      const t=S.teams[id];
+      return '<div style="padding:7px 12px;background:rgba(255,255,255,.05);border-radius:8px;margin-bottom:4px;font-size:13px;font-weight:600;color:rgba(255,255,255,.7)">'+(t?t.name:id)+'</div>';
+    }).join('')+
+  '</div>';
+  
+  // Spin animation — cycle through names
+  let spinCount=0;
+  const spinMax=20;
+  const spinInterval=setInterval(()=>{
+    const randId=pool[Math.floor(Math.random()*pool.length)];
+    const randTeam=S.teams[randId];
+    icon.textContent='🎰';
+    title.textContent=(randTeam?.name||'???').toUpperCase();
+    spinCount++;
+    if(spinCount>=spinMax){
+      clearInterval(spinInterval);
+      // Pick winner
+      const winnerId=pool[Math.floor(Math.random()*pool.length)];
+      const winner=S.teams[winnerId];
+      lastLotteryWinner=winnerId;
+      
+      // Show result
+      setTimeout(()=>{
+        icon.textContent='🏆';
+        title.textContent='WINNER!';
+        sub.textContent='Lottery result';
+        const winColor=winner?.color||'#7b2ff7';
+        content.innerHTML=
+          '<div style="background:'+winColor+'22;border:2px solid '+winColor+'88;border-radius:14px;padding:20px;margin-bottom:12px">'+
+            (winner?.logo?'<img src="'+winner.logo+'" style="width:50px;height:50px;border-radius:10px;object-fit:cover;margin-bottom:8px">':'<div style="font-size:36px;margin-bottom:8px">🏆</div>')+
+            '<div style="font-family:Orbitron,monospace;font-size:22px;font-weight:900;color:#fff;letter-spacing:2px">'+(winner?.name||'???').toUpperCase()+'</div>'+
+            '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">WINS THE LOTTERY</div>'+
+          '</div>'+
+          '<div style="font-size:11px;color:rgba(255,255,255,.35)">Tap OK then mark SOLD for this team</div>';
+        closeBtn.style.display='block';
+        
+        // Auto-select winning team
+        selTeam=winnerId;
+        renderTeamBidGrid();
+        toast('🎲 Lottery: '+winner?.name+' wins!');
+        
+        // Push to Firebase so OBS can show
+        fb.patch('auction',{lotteryWinner:winnerId,lotteryWinnerName:winner?.name||''});
+      },300);
+    }
+  },80);
+}
+
+function closeLottery(){
+  document.getElementById('lotteryModal').style.display='none';
+  // Hide lottery button after use
+  const lw=document.getElementById('lotteryBtnWrap');
+  if(lw) lw.style.display='none';
+}
+
 async function completeAuction(){
   if(!confirm('Mark auction as complete? Remaining players will stay as-is.'))return;
   clearInterval(timerInt);
@@ -614,6 +758,65 @@ async function saveCtrlSettings(){
   if(S.activeTourId) await fb.patch(`tours/${S.activeTourId}/settings`,{timerDuration:dur});
   await fb.patch('auction',{timerDuration:dur});
   toast('Timer saved: '+dur+'s');
+}
+
+function toggleLottery(){
+  const btn=document.getElementById('lotteryToggleBtn');
+  const wrap=document.getElementById('lotteryAmountWrap');
+  const isOn=btn.textContent==='ON';
+  if(isOn){
+    // Turn OFF
+    btn.textContent='OFF';
+    btn.style.background='rgba(123,47,247,.2)';
+    btn.style.color='#a78bfa';
+    btn.style.borderColor='rgba(123,47,247,.3)';
+    wrap.style.display='none';
+    S.settings.lotteryAmount=0;
+    document.getElementById('lotteryStatusTxt').textContent='';
+    if(S.activeTourId) fb.patch(`tours/${S.activeTourId}/settings`,{lotteryAmount:0});
+    toast('Lottery OFF');
+  } else {
+    // Turn ON
+    btn.textContent='ON';
+    btn.style.background='linear-gradient(135deg,#7b2ff7,#4a00e0)';
+    btn.style.color='#fff';
+    btn.style.borderColor='rgba(123,47,247,.6)';
+    wrap.style.display='block';
+    document.getElementById('lotteryAmountInput').focus();
+  }
+}
+
+async function saveLotterySettings(){
+  const amt=parseInt(document.getElementById('lotteryAmountInput').value)||0;
+  if(!amt){toast('Amount enter করুন!');return;}
+  S.settings.lotteryAmount=amt;
+  if(S.activeTourId) await fb.patch(`tours/${S.activeTourId}/settings`,{lotteryAmount:amt});
+  document.getElementById('lotteryStatusTxt').textContent='✓ Lottery active at ₹'+amt.toLocaleString('en-IN');
+  toast('Lottery set at ₹'+amt.toLocaleString('en-IN'));
+}
+
+// Update lottery UI when settings load
+function updateLotteryUI(){
+  const amt=S.settings.lotteryAmount||0;
+  const btn=document.getElementById('lotteryToggleBtn');
+  const wrap=document.getElementById('lotteryAmountWrap');
+  const st=document.getElementById('lotteryStatusTxt');
+  if(!btn)return;
+  if(amt>0){
+    btn.textContent='ON';
+    btn.style.background='linear-gradient(135deg,#7b2ff7,#4a00e0)';
+    btn.style.color='#fff';
+    btn.style.borderColor='rgba(123,47,247,.6)';
+    wrap.style.display='block';
+    document.getElementById('lotteryAmountInput').value=amt;
+    if(st) st.textContent='✓ Lottery active at ₹'+amt.toLocaleString('en-IN');
+  } else {
+    btn.textContent='OFF';
+    btn.style.background='rgba(123,47,247,.2)';
+    btn.style.color='#a78bfa';
+    wrap.style.display='none';
+    if(st) st.textContent='';
+  }
 }
 
 // ═══ RENDER ═══

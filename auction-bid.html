@@ -406,14 +406,17 @@ function handleAuction(prev,cur){
 }
 
 function addI(a){
-  const cur=S.auction.currentBid||0;
-  myBid=cur+a;  // Always base from current bid, not from myBid
+  const p=S.players[S.auction.currentPlayerId];
+  const base=p?.basePrice||S.settings.defaultBasePrice||5000;
+  const cur=S.auction.currentBid||base; // use base if no bid yet
+  myBid=cur+a;
   document.getElementById('myBidAmount').textContent=fmt(myBid);
   checkBidBtn();
 }
 function resetI(){
-  const cur=S.auction.currentBid||0;
-  myBid=cur;  // Reset to current bid (base price on first bid)
+  const p=S.players[S.auction.currentPlayerId];
+  const base=p?.basePrice||S.settings.defaultBasePrice||5000;
+  myBid=S.auction.currentBid||base; // reset to current bid or base
   document.getElementById('myBidAmount').textContent=fmt(myBid);
   checkBidBtn();
 }

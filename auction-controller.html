@@ -193,7 +193,7 @@ body{background:var(--bg);color:#fff;font-family:'Inter',sans-serif;min-height:1
     <div style="padding:12px 14px 8px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
       <button class="btn bs" id="startBtn" onclick="startAuction()">▶ START</button>
       <button class="btn bd" id="pauseBtn" onclick="togglePause()" disabled>⏸ PAUSE</button>
-      <button class="btn bor" onclick="shuffleNext()">🔀 NEXT</button>
+      <button class="btn bor" id="nextBtn" onclick="shuffleNext()">🔀 NEXT</button>
     </div>
 
     <!-- Timer toggle -->
@@ -367,7 +367,7 @@ let selBid=0,selTeam=null,timerInt=null,pickFilter='available',useTimer=true;
     setConn(true);
   }
   // Always poll auction
-  pollPath('auction',d=>{
+  streamPath('auction',d=>{
     if(!d)return;
     const prevStatus=S.auction.status;
     S.auction={...S.auction,...d};
@@ -380,9 +380,9 @@ let selBid=0,selTeam=null,timerInt=null,pickFilter='available',useTimer=true;
 })();
 
 function loadTournamentData(tid){
-  pollPath(`tours/${tid}/players`,d=>{S.players=d||{};renderAuction();renderPickList();updateStatsBar();renderCtrlTeams();checkValidation();},1000);
-  pollPath(`tours/${tid}/teams`,d=>{S.teams=d||{};renderTeamBidGrid();renderCtrlTeams();},1500);
-  pollPath(`tours/${tid}/settings`,d=>{if(!d)return;S.settings={...S.settings,...d};document.getElementById('ctrlTimer').value=d.timerDuration||30;renderIncGrid();updateLotteryUI();},3000);
+  streamPath(`tours/${tid}/players`,d=>{if(!d)return;S.players=d||{};renderAuction();renderPickList();updateStatsBar();renderCtrlTeams();checkValidation();});
+  streamPath(`tours/${tid}/teams`,d=>{if(!d)return;S.teams=d||{};renderTeamBidGrid();renderCtrlTeams();});
+  pollPath(`tours/${tid}/settings`,d=>{if(!d)return;S.settings={...S.settings,...d};document.getElementById('ctrlTimer').value=d.timerDuration||30;renderIncGrid();updateLotteryUI();},5000);
   setConn(true);
   setTimeout(async()=>{
     const cur=await fb.get('auction');
@@ -390,9 +390,44 @@ function loadTournamentData(tid){
   },1500);
 }
 
-function pollPath(path,cb,ms=1200){
+// Firebase SSE stream for real-time updates
+function streamPath(path,cb){
+  const url=DB+'/'+path+'.json';
+  let es;
+  function connect(){
+    try{
+      es=new EventSource(url);
+      es.addEventListener('put',e=>{
+        try{const d=JSON.parse(e.data);cb(d.data);}catch{}
+      });
+      es.addEventListener('patch',e=>{
+        try{const d=JSON.parse(e.data);cb(d.data);}catch{}
+      });
+      es.onerror=()=>{
+        es.close();
+        setTimeout(connect,2000); // reconnect on error
+      };
+    }catch(e){
+      // SSE not supported, fallback to polling
+      pollPath(path,cb,500);
+    }
+  }
+  connect();
+}
+
+function pollPath(path,cb,ms=600){
   let last=undefined;
-  async function run(){const v=await fb.get(path);const s=JSON.stringify(v);if(s!==JSON.stringify(last)){last=v;cb(v);}}
+  let running=false;
+  async function run(){
+    if(running)return;
+    running=true;
+    try{
+      const v=await fb.get(path);
+      const s=JSON.stringify(v);
+      if(s!==JSON.stringify(last)){last=v;cb(v);}
+    }catch(e){}
+    running=false;
+  }
   run();setInterval(run,ms);
 }
 function setConn(ok){document.getElementById('dot').className='dot'+(ok?' ok':'');document.getElementById('stxt').textContent=ok?'Live':'Offline';}
@@ -474,6 +509,11 @@ function startLocalTimer(){
 async function shuffleNext(){
   if(!S.activeTourId){toast('No tournament!');return;}
   if(!isAuctionOpen()){toast('Start auction from Admin first!');return;}
+  // Block if current player still active (not sold/unsold)
+  const cur=S.auction.currentPlayerId;
+  if(cur && S.players[cur] && S.players[cur].status==='active'){
+    toast('আগের player কে SOLD বা UNSOLD করুন!');return;
+  }
   const avail=Object.entries(S.players).filter(([,p])=>p.status==='available');
   if(!avail.length){
     const unsold=Object.entries(S.players).filter(([,p])=>p.status==='unsold');
@@ -494,6 +534,11 @@ async function pickPlayer(pid){
   if(!p){toast('Player not found!');return;}
   if(p.status==='sold'){toast('Already sold!');return;}
   if(!isAuctionOpen()){toast('Start auction from Admin first!');return;}
+  // Block if current player still active
+  const cur=S.auction.currentPlayerId;
+  if(cur && cur!==pid && S.players[cur] && S.players[cur].status==='active'){
+    toast('আগের player কে SOLD বা UNSOLD করুন!');return;
+  }
   clearInterval(timerInt);
   await doSelectPlayer(pid);
   switchPage('auction',document.querySelector('.tab'));
@@ -837,6 +882,14 @@ function renderAuction(){
   if(status==='paused'){pb.textContent='▶ RESUME';pb.style.background='linear-gradient(135deg,#00c853,#007b33)';}
   else{pb.textContent='⏸ PAUSE';pb.style.background='';}
   document.getElementById('soldBtn').disabled=!currentBidder;
+  // Block NEXT if current player still active (not sold/unsold)
+  const nextBtn=document.getElementById('nextBtn');
+  const isCurrentActive=currentPlayerId && S.players[currentPlayerId]?.status==='active';
+  if(nextBtn){
+    nextBtn.disabled=isCurrentActive;
+    nextBtn.style.opacity=isCurrentActive?'.4':'1';
+    nextBtn.title=isCurrentActive?'আগের player কে SOLD বা UNSOLD করুন':'Next player';
+  }
 
   if(!p)return;
 

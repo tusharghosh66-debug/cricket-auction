@@ -336,6 +336,24 @@ function playDustFlyEffect(playerImg, soldTeamId){
   }, 2000);
 }
 
+// SSE stream for auction - real-time
+function startAuctionStream(){
+  let es;
+  function connect(){
+    try{
+      es=new EventSource(DB+'/auction.json');
+      es.addEventListener('put',e=>{
+        try{const d=JSON.parse(e.data);if(d.data){const prev={...OS.auction};OS.auction=d.data;handle(prev,d.data);}}catch{}
+      });
+      es.addEventListener('patch',e=>{
+        try{const d=JSON.parse(e.data);if(d.data){const prev={...OS.auction};OS.auction={...OS.auction,...d.data};handle(prev,OS.auction);}}catch{}
+      });
+      es.onerror=()=>{es.close();setTimeout(connect,2000);};
+    }catch{} // fallback to poll
+  }
+  connect();
+}
+
 async function poll(){
   try{
     const[auction,at]=await Promise.all([fbGet('auction'),fbGet('activeTourn')]);
@@ -355,7 +373,7 @@ async function poll(){
     }
     if(auction){const prev={...OS.auction};OS.auction=auction;handle(prev,auction);}
   }catch(e){}
-  setTimeout(poll,850);
+  setTimeout(poll,600);
 }
 
 function handle(prev,cur){
@@ -518,6 +536,7 @@ function fmtNum(n){if(!n&&n!==0)return'0';return Number(n).toLocaleString('en-IN
 function fmt(n){if(!n&&n!==0)return'₹0';return'₹'+Number(n).toLocaleString('en-IN');}
 
 setTimeout(()=>show('idle'),400);
+startAuctionStream();
 poll();
 </script>
 </body>

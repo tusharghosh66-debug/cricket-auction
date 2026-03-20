@@ -299,16 +299,22 @@ function showLock(team){
   }
 
   // Poll
-  pollPath(`tours/${tourId}/teams/${teamId}`,d=>{if(!d)return;S.team=d;updateTeamDisplay();renderSquad();},2000);
-  pollPath(`tours/${tourId}/players`,d=>{S.players=d||{};renderSquad();},2000);
+  pollPath(`tours/${tourId}/teams/${teamId}`,d=>{if(!d)return;S.team=d;updateTeamDisplay();renderSquad();},1000);
+  pollPath(`tours/${tourId}/players`,d=>{S.players=d||{};renderSquad();},1200);
   renderBidIncGrid(); // render defaults immediately
   pollPath(`tours/${tourId}/settings`,d=>{if(!d)return;S.settings=d;renderBidIncGrid();},3000);
-  pollPath('auction',d=>{if(!d)return;const prev={...S.auction};S.auction=d;handleAuction(prev,d);},800);
+  pollPath('auction',d=>{if(!d)return;const prev={...S.auction};S.auction=d;handleAuction(prev,d);},600);
 })();
 
-function pollPath(path,cb,ms=1200){
-  let last=undefined;
-  async function run(){const v=await fb.get(path);const s=JSON.stringify(v);if(s!==JSON.stringify(last)){last=v;cb(v);}}
+function pollPath(path,cb,ms=1000){
+  let last=undefined,running=false;
+  async function run(){
+    if(running)return;
+    running=true;
+    try{const v=await fb.get(path);const s=JSON.stringify(v);if(s!==JSON.stringify(last)){last=v;cb(v);}}
+    catch(e){}
+    running=false;
+  }
   run();setInterval(run,ms);
 }
 function setConn(ok){document.getElementById('dot').className='dot'+(ok?' ok':'');document.getElementById('stxt').textContent=ok?'Live':'Offline';}

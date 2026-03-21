@@ -372,8 +372,24 @@ let selBid=0,selTeam=null,timerInt=null,pickFilter='available',useTimer=true;
     const prevStatus=S.auction.status;
     S.auction={...S.auction,...d};
     // If admin pressed START (waiting), auto-begin in controller
-    if(d.status==='waiting' && prevStatus!=='waiting' && S.activeTourId && !_autoNextRunning){
+    // Only auto-start when admin sets waiting (no currentPlayerId = fresh admin start)
+    // Don't trigger if doSelectPlayer just set waiting (has currentPlayerId)
+    const isAdminStart = d.status==='waiting' && prevStatus!=='waiting' && !_autoNextRunning;
+    const isNewPlayerWaiting = d.status==='waiting' && d.currentPlayerId && prevStatus==='waiting';
+    if(isAdminStart && S.activeTourId){
       autoStartFromAdmin();
+    } else if(isNewPlayerWaiting && S.activeTourId && !_autoNextRunning){
+      // New player selected by autoNextPlayer, start it
+      _autoNextRunning=true;
+      const dur=S.settings.timerDuration||30;
+      const p=S.players[d.currentPlayerId];
+      const base=p?.basePrice||S.settings.defaultBasePrice||5000;
+      selBid=base;
+      document.getElementById('bidAmountEl').textContent=fmt(selBid);
+      fb.patch('auction',{status:'active',timer:useTimer?dur:999,timerDuration:dur,currentBid:base,currentBidder:null,currentBidderName:null}).then(()=>{
+        if(useTimer) startLocalTimer();
+        setTimeout(()=>{_autoNextRunning=false;},1000);
+      });
     }
     renderAuction();updateStatsBar();
   },900);
@@ -458,32 +474,42 @@ function isAuctionOpen(){
 // Auto-start when Admin presses START
 async function autoStartFromAdmin(){
   if(!S.activeTourId) return;
-  // Pick first available player if none selected
-  const curPid = S.auction.currentPlayerId;
-  const curP = curPid ? S.players[curPid] : null;
-  if(!curPid || !curP || curP.status==='sold' || curP.status==='unsold'){
-    const avail=Object.entries(S.players).filter(([,p])=>p.status==='available');
-    if(!avail.length){await fb.patch('auction',{status:'idle'});return;}
-    const [pid]=avail[Math.floor(Math.random()*avail.length)];
-    await doSelectPlayer(pid);
-    // doSelectPlayer sets status:'waiting', now start
-    setTimeout(async()=>{
+  _autoNextRunning=true;
+  try{
+    const curPid=S.auction.currentPlayerId;
+    const curP=curPid?S.players[curPid]:null;
+    const needNewPlayer=!curPid||!curP||curP.status==='sold'||curP.status==='unsold';
+    
+    if(needNewPlayer){
+      const avail=Object.entries(S.players).filter(([,p])=>p.status==='available');
+      if(!avail.length){
+        // No available players — keep session open, just warn
+        toast('No available players! Re-queue unsold in Settings.');
+        return;
+      }
+      const [pid]=avail[Math.floor(Math.random()*avail.length)];
+      await doSelectPlayer(pid);
+      await new Promise(r=>setTimeout(r,600));
       const dur=S.settings.timerDuration||30;
       const p=S.players[pid];
       const base=p?.basePrice||S.settings.defaultBasePrice||5000;
       selBid=base;
+      document.getElementById('bidAmountEl').textContent=fmt(selBid);
       await fb.patch('auction',{status:'active',timer:useTimer?dur:999,timerDuration:dur,currentBid:base,currentBidder:null,currentBidderName:null,tourId:S.activeTourId});
       if(useTimer) startLocalTimer();
-    }, 500);
-    return;
+    } else {
+      // Player already selected — just start
+      const dur=S.settings.timerDuration||30;
+      const p=S.players[curPid];
+      const base=p?.basePrice||S.settings.defaultBasePrice||5000;
+      selBid=base;
+      document.getElementById('bidAmountEl').textContent=fmt(selBid);
+      await fb.patch('auction',{status:'active',timer:useTimer?dur:999,timerDuration:dur,currentBid:base,currentBidder:null,currentBidderName:null,tourId:S.activeTourId});
+      if(useTimer) startLocalTimer();
+    }
+  }finally{
+    setTimeout(()=>{_autoNextRunning=false;},1000);
   }
-  // Player already selected, just start
-  const dur=S.settings.timerDuration||30;
-  const p=S.players[curPid];
-  const base=p?.basePrice||S.settings.defaultBasePrice||5000;
-  selBid=base;
-  await fb.patch('auction',{status:'active',timer:useTimer?dur:999,timerDuration:dur,currentBid:base,currentBidder:null,currentBidderName:null,tourId:S.activeTourId});
-  if(useTimer) startLocalTimer();
 }
 
 // ═══ AUCTION ═══

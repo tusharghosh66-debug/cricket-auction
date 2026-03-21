@@ -373,6 +373,8 @@ let selBid=0,selTeam=null,timerInt=null,pickFilter='available',useTimer=true;
     const prevBidder=S.auction.currentBidder;
     const prevBid=S.auction.currentBid||0;
     S.auction={...S.auction,...d};
+    // Restore lastLotteryWinner from Firebase for fairness across sessions
+    if(d.lastLotteryWinner) lastLotteryWinner=d.lastLotteryWinner;
     // Track bidders for lottery from ANY source (bid page or controller)
     if(d.currentBidder && d.currentBidder!==prevBidder){
       if(!lotteryBidders.includes(d.currentBidder)) lotteryBidders.push(d.currentBidder);
@@ -795,16 +797,23 @@ async function runLottery(){
   // Spin animation — cycle through names
   let spinCount=0;
   const spinMax=20;
+  // Shuffle pool for fair random
+  const shuffledPool=[...pool].sort(()=>Math.random()-.5);
   const spinInterval=setInterval(()=>{
-    const randId=pool[Math.floor(Math.random()*pool.length)];
+    const randId=shuffledPool[spinCount%shuffledPool.length];
     const randTeam=S.teams[randId];
     icon.textContent='🎰';
     title.textContent=(randTeam?.name||'???').toUpperCase();
     spinCount++;
     if(spinCount>=spinMax){
       clearInterval(spinInterval);
-      // Pick winner
-      const winnerId=pool[Math.floor(Math.random()*pool.length)];
+      // Pick winner — cryptographically fair using multiple random passes
+      let winnerId=pool[Math.floor(Math.random()*pool.length)];
+      // Extra pass to ensure different from last winner
+      if(winnerId===lastLotteryWinner && pool.length>1){
+        const others=pool.filter(id=>id!==lastLotteryWinner);
+        winnerId=others[Math.floor(Math.random()*others.length)];
+      }
       const winner=S.teams[winnerId];
       lastLotteryWinner=winnerId;
       

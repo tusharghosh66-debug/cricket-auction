@@ -242,9 +242,9 @@ body{background:transparent;overflow:hidden;width:1920px;height:1080px;}
   </div>
 </div>
 
-<div id="lotteryWinnerOverlay">
+<div id="lotteryWinnerOverlay" style="display:none">
   <div class="lwo-title">🎲 Lottery Winner</div>
-  <div class="lwo-name" id="lwoName">-</div>
+  <div class="lwo-name" id="lwoName"></div>
   <div class="lwo-sub">wins this player!</div>
 </div>
 
@@ -358,11 +358,30 @@ function startAuctionStream(){
   function connect(){
     try{
       es=new EventSource(DB+'/auction.json');
-      es.addEventListener('put',e=>{
-        try{const d=JSON.parse(e.data);if(d.data){const prev={...OS.auction};OS.auction=d.data;handle(prev,d.data);}}catch{}
+      es.addEventListener('put',async e=>{
+        try{
+          const d=JSON.parse(e.data);
+          if(!d.data)return;
+          const pid=d.data.currentPlayerId;
+          if(pid&&OS.activeTourId&&!OS.players[pid]){
+            const fp=await fbGet('tours/'+OS.activeTourId+'/players/'+pid);
+            if(fp) OS.players[pid]=fp;
+          }
+          const prev={...OS.auction};OS.auction=d.data;handle(prev,d.data);
+        }catch{}
       });
-      es.addEventListener('patch',e=>{
-        try{const d=JSON.parse(e.data);if(d.data){const prev={...OS.auction};OS.auction={...OS.auction,...d.data};handle(prev,OS.auction);}}catch{}
+      es.addEventListener('patch',async e=>{
+        try{
+          const d=JSON.parse(e.data);
+          if(!d.data)return;
+          const merged={...OS.auction,...d.data};
+          const pid=merged.currentPlayerId;
+          if(pid&&OS.activeTourId&&!OS.players[pid]){
+            const fp=await fbGet('tours/'+OS.activeTourId+'/players/'+pid);
+            if(fp) OS.players[pid]=fp;
+          }
+          const prev={...OS.auction};OS.auction=merged;handle(prev,OS.auction);
+        }catch{}
       });
       es.onerror=()=>{es.close();setTimeout(connect,2000);};
     }catch{} // fallback to poll
@@ -387,12 +406,22 @@ async function poll(){
       if(players){OS.players=players;updStats();}
       if(teams&&JSON.stringify(teams)!==JSON.stringify(OS.teams)){OS.teams=teams;renderTeams(OS.auction.currentBidder);}
     }
-    if(auction){const prev={...OS.auction};OS.auction=auction;handle(prev,auction);}
+    // Handle auction AFTER players are loaded
+    if(auction){
+      // If we have a currentPlayerId but no player data yet, skip until next poll
+      const pid=auction.currentPlayerId;
+      if(pid && OS.activeTourId && !OS.players[pid]){
+        // Fetch that specific player now
+        const fp=await fbGet('tours/'+OS.activeTourId+'/players/'+pid);
+        if(fp) OS.players[pid]=fp;
+      }
+      const prev={...OS.auction};OS.auction=auction;handle(prev,auction);
+    }
   }catch(e){}
   setTimeout(poll,600);
 }
 
-function handle(prev,cur){
+async function handle(prev,cur){
   const{status,currentPlayerId,currentBid,currentBidder,currentBidderName,
         timer,timerDuration,lastSoldPlayer,lastSoldTeam,lastSoldPrice,isReAuction,
         lotteryWinner,lotteryWinnerName,lotteryWinnerColor}=cur;
@@ -459,10 +488,17 @@ function handle(prev,cur){
   }
 
   hide('idle');show('topBar');show('teamPanel');
-  const p=OS.players[currentPlayerId];if(!p)return;
+  let p=OS.players[currentPlayerId];
+  if(!p){
+    // Player not in cache yet — fetch directly
+    const freshP=await fbGet('tours/'+OS.activeTourId+'/players/'+currentPlayerId);
+    if(freshP){OS.players[currentPlayerId]=freshP;p=freshP;}
+    else return;
+  }
   
-  // Show lottery winner overlay if set
-  if(cur.lotteryWinner && cur.lotteryWinnerName && cur.lotteryWinner!==prev.lotteryWinner){
+  // Show lottery winner overlay only when it changes to a real value
+  if(cur.lotteryWinner && cur.lotteryWinnerName &&
+     cur.lotteryWinner!==prev.lotteryWinner && cur.lotteryWinner!=='null'){
     showLotteryWinner(cur.lotteryWinnerName, cur.lotteryWinner);
   }
 
@@ -579,15 +615,20 @@ function showLotteryOverlay(name,color,team){
 }
 
 function showLotteryWinner(name, teamId){
+  if(!name) return;
   const el=document.getElementById('lotteryWinnerOverlay');
   const nm=document.getElementById('lwoName');
   if(!el||!nm)return;
-  nm.textContent=(name||'').toUpperCase();
-  // Team color border
+  nm.textContent=name.toUpperCase();
   const team=OS.teams[teamId];
   if(team&&team.color) el.style.borderColor=team.color;
-  el.classList.add('v');
-  setTimeout(()=>el.classList.remove('v'),5000);
+  el.style.display='flex';
+  el.style.opacity='0';
+  setTimeout(()=>{el.style.transition='opacity .4s';el.style.opacity='1';},50);
+  setTimeout(()=>{
+    el.style.opacity='0';
+    setTimeout(()=>{el.style.display='none';},400);
+  },5000);
 }
 
 function fmt(n){if(!n&&n!==0)return'₹0';return'₹'+Number(n).toLocaleString('en-IN');}

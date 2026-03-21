@@ -635,8 +635,11 @@ async function placeBid(){
   document.querySelectorAll('#incGrid .inc-btn').forEach(b=>b.classList.remove('active'));
   // Track this team as a bidder for lottery
   if(!lotteryBidders.includes(selTeam)) lotteryBidders.push(selTeam);
-  checkLotteryTrigger(selBid);
   toast(t.name+' → '+fmt(selBid));
+  // Check lottery AFTER bid saved — if cap reached, show lottery button
+  if(lotteryAmt>0 && selBid>=lotteryAmt){
+    checkLotteryTrigger(selBid);
+  }
 }
 
 async function soldPlayer(){
@@ -949,11 +952,20 @@ function renderAuction(){
     nextBtn.style.opacity=isCurrentActive?'.4':'1';
     nextBtn.title=isCurrentActive?'আগের player কে SOLD বা UNSOLD করুন':'Next player';
   }
-  // Check lottery trigger on every render (covers bids from bid page)
-  const curBidCheck=currentBid||0;
-  if(curBidCheck>0) checkLotteryTrigger(curBidCheck);
-  // Also sync lotteryAmount from auction object to settings
+  // Sync lotteryAmount from auction object to settings
   if(S.auction.lotteryAmount!==undefined) S.settings.lotteryAmount=S.auction.lotteryAmount;
+  // Check lottery trigger on every render (covers bids from bid page too)
+  const lottAmt=parseInt(S.settings.lotteryAmount||0);
+  if(lottAmt>0 && (currentBid||0)>=lottAmt){
+    checkLotteryTrigger(currentBid);
+  } else {
+    // Re-enable bid button if below cap
+    const pbb=document.getElementById('placeBidBtn');
+    if(pbb&&pbb.textContent==='🎲 Lottery Required'&&(currentBid||0)<lottAmt){
+      pbb.disabled=false;pbb.textContent='⚡ PLACE BID';pbb.style.background='';
+      document.querySelectorAll('#incGrid .inc-btn').forEach(b=>{b.disabled=false;b.style.opacity='1';});
+    }
+  }
 
   if(!p)return;
 

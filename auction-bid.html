@@ -432,12 +432,19 @@ function checkBidBtn(){
   const budget=S.team?.currentBudget||0;
   const cap=parseInt(S.auction.lotteryAmount||S.settings.lotteryAmount)||0;
   const curBid=S.auction.currentBid||0;
+  const isMeLead=S.auction.currentBidder===teamId;
   const bidBtn=document.getElementById('bidBtn');
-  // Lottery cap reached — current bid is already at cap
+  // Already at lottery cap — no more bidding
   if(cap>0 && curBid>=cap){
     bidBtn.disabled=true;
     bidBtn.style.background='linear-gradient(135deg,#7b2ff7,#4a00e0)';
     bidBtn.textContent='🎲 Lottery Decides!';
+    return;
+  }
+  if(isMeLead){
+    bidBtn.disabled=true;
+    bidBtn.style.background='linear-gradient(135deg,#1a6b3c,#0d4a28)';
+    bidBtn.textContent="🏆 YOU'RE LEADING";
     return;
   }
   if(myBid>budget){
@@ -463,15 +470,14 @@ async function submitBid(){
   if(!myBid||myBid<base) myBid=base;
   if(hasBidder && myBid<=curBid){toast('Bid must be higher than '+fmt(curBid)+'!');return;}
   if(myBid>budget){toast('Budget exceeded!');return;}
-  // Bid cap: lottery amount (from auction real-time OR settings)
+  // Lottery cap logic
   const cap=parseInt(S.auction.lotteryAmount||S.settings.lotteryAmount)||0;
-  if(cap>0 && myBid>=cap){
-    toast('🎲 Lottery limit reached! Max: '+fmt(cap));
-    myBid=cap;document.getElementById('myBidAmount').textContent=fmt(myBid);return;
-  }
-  if(cap>0 && myBid>cap){
-    toast('Max bid: '+fmt(cap));
-    myBid=cap;document.getElementById('myBidAmount').textContent=fmt(myBid);return;
+  if(cap>0){
+    if(myBid>cap) myBid=cap; // cap it silently
+    // If current bid already AT cap, block
+    if((S.auction.currentBid||0)>=cap){
+      toast('🎲 Lottery amount reached! Waiting for lottery result.');return;
+    }
   }
   const dur=S.settings.timerDuration||30;
   await fb.patch('auction',{currentBid:myBid,currentBidder:teamId,currentBidderName:S.team.name,timer:dur,status:'active'});

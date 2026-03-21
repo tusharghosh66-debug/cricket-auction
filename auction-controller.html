@@ -876,6 +876,7 @@ function toggleLottery(){
     S.settings.lotteryAmount=0;
     document.getElementById('lotteryStatusTxt').textContent='';
     if(S.activeTourId) fb.patch(`tours/${S.activeTourId}/settings`,{lotteryAmount:0});
+    fb.patch('auction',{lotteryAmount:0});
     toast('Lottery OFF');
   } else {
     // Turn ON
@@ -949,7 +950,10 @@ function renderAuction(){
     nextBtn.title=isCurrentActive?'আগের player কে SOLD বা UNSOLD করুন':'Next player';
   }
   // Check lottery trigger on every render (covers bids from bid page)
-  if(currentBid>0) checkLotteryTrigger(currentBid);
+  const curBidCheck=currentBid||0;
+  if(curBidCheck>0) checkLotteryTrigger(curBidCheck);
+  // Also sync lotteryAmount from auction object to settings
+  if(S.auction.lotteryAmount!==undefined) S.settings.lotteryAmount=S.auction.lotteryAmount;
 
   if(!p)return;
 

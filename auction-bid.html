@@ -414,8 +414,10 @@ function handleAuction(prev,cur){
 function addI(a){
   const p=S.players[S.auction.currentPlayerId];
   const base=p?.basePrice||S.settings.defaultBasePrice||5000;
-  const cur=S.auction.currentBid||base; // use base if no bid yet
+  const cur=S.auction.currentBid||base;
+  const cap=S.settings.lotteryAmount||0;
   myBid=cur+a;
+  if(cap>0 && myBid>cap) myBid=cap;
   document.getElementById('myBidAmount').textContent=fmt(myBid);
   checkBidBtn();
 }
@@ -428,10 +430,25 @@ function resetI(){
 }
 function checkBidBtn(){
   const budget=S.team?.currentBudget||0;
+  const cap=parseInt(S.auction.lotteryAmount||S.settings.lotteryAmount)||0;
+  const curBid=S.auction.currentBid||0;
   const bidBtn=document.getElementById('bidBtn');
-  if(myBid>budget){bidBtn.style.background='linear-gradient(135deg,#555,#333)';bidBtn.textContent='❌ BUDGET EXCEEDED';}
-  else{bidBtn.style.background='';bidBtn.textContent='⚡ BID NOW';}
-  bidBtn.disabled=myBid>(S.team?.currentBudget||0)||S.auction.status!=='active';
+  // Lottery cap reached — current bid is already at cap
+  if(cap>0 && curBid>=cap){
+    bidBtn.disabled=true;
+    bidBtn.style.background='linear-gradient(135deg,#7b2ff7,#4a00e0)';
+    bidBtn.textContent='🎲 Lottery Decides!';
+    return;
+  }
+  if(myBid>budget){
+    bidBtn.style.background='linear-gradient(135deg,#555,#333)';
+    bidBtn.textContent='❌ BUDGET EXCEEDED';
+    bidBtn.disabled=true;
+  } else {
+    bidBtn.style.background='';
+    bidBtn.textContent='⚡ BID NOW';
+    bidBtn.disabled=S.auction.status!=='active';
+  }
 }
 
 async function submitBid(){
@@ -446,6 +463,16 @@ async function submitBid(){
   if(!myBid||myBid<base) myBid=base;
   if(hasBidder && myBid<=curBid){toast('Bid must be higher than '+fmt(curBid)+'!');return;}
   if(myBid>budget){toast('Budget exceeded!');return;}
+  // Bid cap: lottery amount (from auction real-time OR settings)
+  const cap=parseInt(S.auction.lotteryAmount||S.settings.lotteryAmount)||0;
+  if(cap>0 && myBid>=cap){
+    toast('🎲 Lottery limit reached! Max: '+fmt(cap));
+    myBid=cap;document.getElementById('myBidAmount').textContent=fmt(myBid);return;
+  }
+  if(cap>0 && myBid>cap){
+    toast('Max bid: '+fmt(cap));
+    myBid=cap;document.getElementById('myBidAmount').textContent=fmt(myBid);return;
+  }
   const dur=S.settings.timerDuration||30;
   await fb.patch('auction',{currentBid:myBid,currentBidder:teamId,currentBidderName:S.team.name,timer:dur,status:'active'});
   toast('✓ Bid: '+fmt(myBid));

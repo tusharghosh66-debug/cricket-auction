@@ -509,6 +509,9 @@ async function shuffleNext(){
   if(cur && S.players[cur] && S.players[cur].status==='active'){
     toast('আগের player কে SOLD বা UNSOLD করুন!');return;
   }
+  // Fresh fetch players from Firebase
+  const fresh=await fb.get(`tours/${S.activeTourId}/players`);
+  if(fresh) S.players=fresh;
   const avail=Object.entries(S.players).filter(([,p])=>p.status==='available');
   if(!avail.length){
     const unsold=Object.entries(S.players).filter(([,p])=>p.status==='unsold');

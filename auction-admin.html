@@ -974,14 +974,18 @@ function saveImgbb(){
 async function resetPlayers(){
   if(!activeTourId)return;
   if(!confirm('Reset all players to Available? (Sold/Unsold status will clear)'))return;
-  const u={};
-  Object.keys(players).forEach(id=>{
-    u[id+'/status']='available';
-    u[id+'/soldTo']=null;
-    u[id+'/soldToName']=null;
-    u[id+'/soldPrice']=null;
+  // Fresh fetch players from Firebase
+  const freshPlayers = await fb.get('tours/'+activeTourId+'/players');
+  if(!freshPlayers){toast('No players found!');return;}
+  // Update each player individually
+  const updates={};
+  Object.keys(freshPlayers).forEach(id=>{
+    updates[id+'/status']='available';
+    updates[id+'/soldTo']=null;
+    updates[id+'/soldToName']=null;
+    updates[id+'/soldPrice']=null;
   });
-  await fb.patch('tours/'+activeTourId+'/players',u);
+  await fb.patch('tours/'+activeTourId+'/players',updates);
   await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:settings.timerDuration||30,timerDuration:settings.timerDuration||30,tourId:activeTourId});
   toast('Players reset!');
 }
@@ -990,34 +994,47 @@ async function fullTrialReset(){
   if(!activeTourId)return;
   if(!confirm('Full Reset?\n\n✓ All players → Available\n✓ Teams budget → Original\n✓ Teams squad cleared\n✓ Auction → Idle\n\nThis cannot be undone!'))return;
 
-  // 1. Reset all players
-  const pu={};
-  Object.keys(players).forEach(id=>{
-    pu[id+'/status']='available';
-    pu[id+'/soldTo']=null;
-    pu[id+'/soldToName']=null;
-    pu[id+'/soldPrice']=null;
-  });
-  if(Object.keys(pu).length) await fb.patch('tours/'+activeTourId+'/players',pu);
+  toast('Resetting...');
 
-  // 2. Reset all teams budget & clear players
-  const tu={};
-  Object.entries(teams).forEach(([id,t])=>{
-    tu[id+'/currentBudget']=t.initialBudget||t.currentBudget;
-    tu[id+'/players']=[];
-  });
-  if(Object.keys(tu).length) await fb.patch('tours/'+activeTourId+'/teams',tu);
+  // 1. Fresh fetch players from Firebase
+  const freshPlayers = await fb.get('tours/'+activeTourId+'/players');
+  if(freshPlayers){
+    const pu={};
+    Object.keys(freshPlayers).forEach(id=>{
+      pu[id+'/status']='available';
+      pu[id+'/soldTo']=null;
+      pu[id+'/soldToName']=null;
+      pu[id+'/soldPrice']=null;
+    });
+    await fb.patch('tours/'+activeTourId+'/players',pu);
+  }
 
-  // 3. Reset auction
+  // 2. Fresh fetch teams from Firebase
+  const freshTeams = await fb.get('tours/'+activeTourId+'/teams');
+  if(freshTeams){
+    const tu={};
+    Object.entries(freshTeams).forEach(([id,t])=>{
+      tu[id+'/currentBudget']=t.initialBudget||t.currentBudget||500000;
+      tu[id+'/players']=[];
+    });
+    await fb.patch('tours/'+activeTourId+'/teams',tu);
+  }
+
+  // 3. Reset auction completely
   await fb.set('auction',{
-    status:'idle',currentPlayerId:null,currentBid:0,
-    currentBidder:null,currentBidderName:null,
+    status:'idle',
+    currentPlayerId:null,
+    currentBid:0,
+    currentBidder:null,
+    currentBidderName:null,
+    lotteryWinner:null,
+    lotteryWinnerName:null,
     timer:settings.timerDuration||30,
     timerDuration:settings.timerDuration||30,
     tourId:activeTourId
   });
 
-  toast('Full reset done! Ready for new auction.');
+  toast('✓ Full reset done! Ready for new auction.');
 }
 
 async function clearData(){

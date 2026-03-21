@@ -459,7 +459,9 @@ function isAuctionOpen(){
 // Auto-start when Admin presses START
 async function autoStartFromAdmin(){
   if(!S.activeTourId||_autoNextRunning) return;
-  // Simply trigger autoNextPlayer — it handles everything
+  // Fresh fetch players before checking availability
+  const freshPlayers = await fb.get(`tours/${S.activeTourId}/players`);
+  if(freshPlayers) S.players={...S.players,...freshPlayers};
   await autoNextPlayer();
 }
 
@@ -664,31 +666,50 @@ async function unsoldPlayer(){
 let _autoNextRunning=false; // prevent autoStartFromAdmin from re-triggering
 
 async function autoNextPlayer(){
+  if(_autoNextRunning) return;
   _autoNextRunning=true;
-  const avail=Object.entries(S.players).filter(([,p])=>p.status==='available');
-  if(!avail.length){
-    _autoNextRunning=false;
-    await fb.set('auction',{status:'idle',currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null,timer:S.settings.timerDuration||30,timerDuration:S.settings.timerDuration||30,tourId:S.activeTourId});
-    toast('All players done!');
-    return;
-  }
-  const [pid]=avail[Math.floor(Math.random()*avail.length)];
-  await doSelectPlayer(pid);
-  const dur=S.settings.timerDuration||30;
-  const p=S.players[pid];
-  const base=p?.basePrice||S.settings.defaultBasePrice||5000;
-  selBid=base;
-  document.getElementById('bidAmountEl').textContent=fmt(selBid);
-  setTimeout(async()=>{
-    _autoNextRunning=false;
+  try{
+    // Fresh fetch to get latest player statuses
+    const freshPlayers = await fb.get(`tours/${S.activeTourId}/players`);
+    if(freshPlayers) S.players={...S.players,...freshPlayers};
+    
+    const avail=Object.entries(S.players).filter(([,p])=>p.status==='available');
+    if(!avail.length){
+      toast('All players done! Re-queue unsold from Settings.');
+      // Keep auction session open — just clear current player
+      await fb.patch('auction',{currentPlayerId:null,currentBid:0,currentBidder:null,currentBidderName:null});
+      return;
+    }
+    const [pid]=avail[Math.floor(Math.random()*avail.length)];
+    await doSelectPlayer(pid);
+    await new Promise(r=>setTimeout(r,500));
+    const dur=S.settings.timerDuration||30;
+    const p=S.players[pid]||{};
+    const base=p.basePrice||S.settings.defaultBasePrice||5000;
+    selBid=base;
+    document.getElementById('bidAmountEl').textContent=fmt(selBid);
     lotteryBidders=[];
-    const lw=document.getElementById('lotteryBtnWrap');
-    if(lw) lw.style.display='none';
+    const lw=document.getElementById('lotteryBtnWrap');if(lw)lw.style.display='none';
     const pbb=document.getElementById('placeBidBtn');
     if(pbb){pbb.disabled=false;pbb.textContent='⚡ PLACE BID';pbb.style.background='';}
-    await fb.patch('auction',{status:'active',timer:useTimer?dur:999,timerDuration:dur,currentBid:base,currentBidder:null,currentBidderName:null,lotteryWinner:null,lotteryWinnerName:null});
+    await fb.set('auction',{
+      status:'active',
+      currentPlayerId:pid,
+      currentBid:base,
+      currentBidder:null,
+      currentBidderName:null,
+      lotteryWinner:null,
+      lotteryWinnerName:null,
+      timer:useTimer?dur:999,
+      timerDuration:dur,
+      tourId:S.activeTourId,
+      isReAuction:(p.status==='unsold')||false
+    });
     if(useTimer) startLocalTimer();
-  }, 800);
+  }catch(e){console.error(e);}
+  finally{
+    setTimeout(()=>{_autoNextRunning=false;},2000);
+  }
 }
 
 // RE-QUEUE UNSOLD
